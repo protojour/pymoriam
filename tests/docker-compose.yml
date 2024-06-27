@@ -1,0 +1,190 @@
+---
+version: '3.5'
+services:
+
+  memoriam-gateway:
+    build:
+      context: ../
+    tty: true
+    environment:
+      DEBUG: 0
+      LOG_LEVEL: DEBUG
+      NO_AUTH: 0
+      HOST_DOCS: 1
+      ACCESS_LOG: 0
+      PERF_LOG: 1
+      AUTO_RELOAD: 1
+      GATEWAY_WORKERS: 2
+      GATEWAY_TLS: 1
+      # DOMAIN_TLS: 1
+      # STORAGE_TLS: 1
+      AUTHLY_SERVICENAME: memoriam
+      AUTHLY_SERVICESECRET: secret
+      CERT_FILE: /srv/memoriam/server.pem
+      KEY_FILE: /srv/memoriam/server.key
+      CA_FILE: ''
+    volumes:
+      - ../memoriam:/srv/memoriam/memoriam:ro
+      - ./certs/server.pem:/srv/memoriam/server.pem:ro
+      - ./certs/server.key:/srv/memoriam/server.key:ro
+    ports:
+      - 5001:5001
+    command: memoriam gateway
+
+  memoriam-domain:
+    build:
+      context: ../
+    tty: true
+    environment:
+      DEBUG: 0
+      LOG_LEVEL: DEBUG
+      AQL_LOG: 1
+      ACCESS_LOG: 0
+      AUDIT_LOG: 0
+      AUDIT_LOG_DB: 1
+      AUDIT_VERSIONING: 1
+      PERF_LOG: 1
+      AUTO_RELOAD: 1
+      DOMAIN_WORKERS: 2
+      GATEWAY_TLS: 1
+      # DOMAIN_TLS: 1
+      # STORAGE_TLS: 1
+      REDIS_HOST: valkey
+      AUTHLY_SERVICENAME: memoriam
+      AUTHLY_SERVICESECRET: secret
+      ARANGO_DOMAIN_DB_NAME: memoriam_test
+      ARANGO_DB_NAME: memoriam_test
+      ARANGO_SCHEMA_PATH: /srv/memoriam/db_schema.yml
+      DOMAIN_SCHEMA_PATH: /srv/memoriam/domain_schema.yml
+      SEARCH_CONFIG_PATH: /srv/memoriam/search_config.yml
+      SERVICE_CONFIG_PATH: /srv/memoriam/service_config.yml
+      # CERT_FILE: /srv/memoriam/server.pem
+      # KEY_FILE: /srv/memoriam/server.key
+      CA_FILE: ''
+    volumes:
+      - ../memoriam:/srv/memoriam/memoriam:ro
+      - ./certs/server.pem:/srv/memoriam/server.pem:ro
+      - ./certs/server.key:/srv/memoriam/server.key:ro
+      - ./data/test_schema_integration.yml:/srv/memoriam/db_schema.yml:ro
+      - ./data/test_domain_infoflow.yml:/srv/memoriam/domain_schema.yml:ro
+      - ./data/test_search_config.yml:/srv/memoriam/search_config.yml:ro
+      - ./data/test_service_config.yml:/srv/memoriam/service_config.yml:ro
+    ports:
+      - 5002:5002
+    command: memoriam domain
+
+  memoriam-storage:
+    build:
+      context: ../
+    tty: true
+    environment:
+      DEBUG: 0
+      LOG_LEVEL: DEBUG
+      ACCESS_LOG: 0
+      AUDIT_LOG: 0
+      AUDIT_LOG_DB: 1
+      AUDIT_VERSIONING: 1
+      PERF_LOG: 1
+      AUTO_RELOAD: 1
+      STORAGE_WORKERS: 2
+      GATEWAY_TLS: 1
+      # DOMAIN_TLS: 1
+      # STORAGE_TLS: 1
+      # ARANGO_TLS: 1
+      REDIS_HOST: valkey
+      AUTHLY_SERVICENAME: memoriam
+      AUTHLY_SERVICESECRET: secret
+      ARANGO_ROOT_USERNAME: root
+      ARANGO_ROOT_PASSWORD: secret
+      ARANGO_USERNAME: root
+      ARANGO_PASSWORD: secret
+      ARANGO_DOMAIN_DB_NAME: memoriam_test
+      ARANGO_DB_NAME: memoriam_test
+      ARANGO_SCHEMA_PATH: /srv/memoriam/db_schema.yml
+      INDEX_CONFIG_PATH: /srv/memoriam/index_config.yml
+      SEARCH_CONFIG_PATH: /srv/memoriam/search_config.yml
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+      # CERT_FILE: /srv/memoriam/server.pem
+      # KEY_FILE: /srv/memoriam/server.key
+      CA_FILE: ''
+    volumes:
+      - ../memoriam:/srv/memoriam/memoriam:ro
+      - ./certs/server.pem:/srv/memoriam/server.pem:ro
+      - ./certs/server.key:/srv/memoriam/server.key:ro
+      - ./data/test_schema_integration.yml:/srv/memoriam/db_schema.yml:ro
+      - ./data/test_index_config.yml:/srv/memoriam/index_config.yml:ro
+      - ./data/test_search_config.yml:/srv/memoriam/search_config.yml:ro
+    ports:
+      - 5003:5003
+    command: memoriam storage
+
+  test-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.test-service
+    environment:
+      DEBUG: 0
+      # CERT_FILE: /srv/service/server.pem
+      # KEY_FILE: /srv/service/server.key
+      CA_FILE: ''
+    volumes:
+      - ./run_test_service.py:/srv/service/run_test_service.py:ro
+      - ./certs/server.pem:/srv/service/server.pem:ro
+      - ./certs/server.key:/srv/service/server.key:ro
+    ports:
+      - 6000:6000
+
+  authly:
+    image: protojour/authly:0.17.1
+    container_name: tests-authly
+    depends_on:
+      - valkey
+    tty: true
+    environment:
+      PORT: 5004
+      REDIS_DB: 1
+      REDIS_ADDRESSES: valkey:6379
+      SESSION_TIME_TO_LIVE: 300m
+      STARTUP_FILE: operations_setup.yml
+      LOGGING_FLAGS: 'HTTP_FLOW, STORE_UPDATE, INFO, OPERATION'
+    volumes:
+      - ./data/test_authly_operations.yml:/configs/operations_setup.yml:ro
+      - ./data/authly_operation_schema.json:/configs/operation_schema.json:ro
+    ports:
+      - 5004:5004
+
+  arangodb:
+    image: arangodb:3.11
+    tty: true
+    environment:
+      ARANGO_ROOT_PASSWORD: secret
+      ARANGODB_OVERRIDE_DETECTED_NUMBER_OF_CORES: 2
+    volumes:
+      - test_arango:/var/lib/arangodb3
+      - ./certs/server.pem+key:/tmp/server.pem+key:ro
+    ports:
+      - 8529:8529
+    command: arangod --query.require-with # --server.endpoint ssl://0.0.0.0:8529 --ssl.keyfile /tmp/server.pem+key
+
+  minio:
+    image: minio/minio:latest
+    tty: true
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+    volumes:
+      - test_minio:/data
+    ports:
+      - 9000:9000
+    command: server /data
+
+  valkey:
+    image: valkey/valkey:7.2-alpine
+    volumes:
+      - test_redis:/data
+
+volumes:
+  test_arango:
+  test_minio:
+  test_redis:

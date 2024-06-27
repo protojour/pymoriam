@@ -1,0 +1,37 @@
+view_name: memoriam_text_search
+
+default_collection_props: &default
+  fields:
+    _index:
+      analyzers:
+        - text_en
+
+view_props:
+  links:
+    source: *default
+    ruleset: *default
+    data: *default
+    entity: *default
+    grouping: *default
+    comment: *default
+
+index_fields:
+  source:
+    - label
+    - data
+  ruleset:
+    - label
+    - data
+  data:
+    - data
+  entity:
+    - label
+    - data
+  grouping:
+    - label
+    - data
+  comment:
+    - data
+
+# Configurable analyzers, not currently used
+analyzers: []

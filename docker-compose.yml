@@ -1,0 +1,98 @@
+---
+version: '3.5'
+services:
+
+  memoriam-gateway:
+    build:
+      context: .
+    environment:
+      DEBUG: 1
+      NO_AUTH: 1
+      AUTO_RELOAD: 1
+      GATEWAY_TLS: 1
+      HOST_DOCS: 1
+      CERT_FILE: /srv/memoriam/server.pem
+      KEY_FILE: /srv/memoriam/server.key
+      CA_FILE: ''
+    volumes:
+      - ./memoriam:/srv/memoriam/memoriam:ro
+      - ./tests/certs/server.pem:/srv/memoriam/server.pem:ro
+      - ./tests/certs/server.key:/srv/memoriam/server.key:ro
+    ports:
+      - 5001:5001
+    command: memoriam gateway
+
+  memoriam-domain:
+    build:
+      context: .
+    environment:
+      DEBUG: 1
+      AUTO_RELOAD: 1
+      REDIS_HOST: valkey
+      ARANGO_SCHEMA_PATH: /srv/memoriam/schema.yml
+      SEARCH_CONFIG_PATH: /srv/memoriam/search_config.yml
+      SERVICE_CONFIG_PATH: /srv/memoriam/service_config.yml
+      CA_FILE: ''
+    volumes:
+      - ./memoriam:/srv/memoriam/memoriam:ro
+      - ./tests/data/test_schema_integration.yml:/srv/memoriam/schema.yml:ro
+      - ./tests/data/test_search_config.yml:/srv/memoriam/search_config.yml:ro
+      - ./tests/data/test_service_config_blank.yml:/srv/memoriam/service_config.yml:ro
+    command: memoriam domain
+
+  memoriam-storage:
+    build:
+      context: .
+    environment:
+      DEBUG: 1
+      AUTO_RELOAD: 1
+      REDIS_HOST: valkey
+      ARANGO_ROOT_USERNAME: root
+      ARANGO_ROOT_PASSWORD: secret
+      ARANGO_USERNAME: root
+      ARANGO_PASSWORD: secret
+      ARANGO_SCHEMA_PATH: /srv/memoriam/schema.yml
+      SEARCH_CONFIG_PATH: /srv/memoriam/search_config.yml
+      INDEX_CONFIG_PATH: /srv/memoriam/index_config.yml
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+      CA_FILE: ''
+    volumes:
+      - ./memoriam:/srv/memoriam/memoriam:ro
+      - ./tests/data/test_schema_integration.yml:/srv/memoriam/schema.yml:ro
+      - ./tests/data/test_index_config.yml:/srv/memoriam/index_config.yml:ro
+      - ./tests/data/test_search_config.yml:/srv/memoriam/search_config.yml:ro
+    command: memoriam storage
+
+  authly:
+    image: protojour/authly:0.17.1
+    depends_on:
+      - valkey
+    environment:
+      PORT: 5004
+      REDIS_ADDRESSES: valkey:6379
+
+  arangodb:
+    image: arangodb:3.11
+    environment:
+      ARANGO_ROOT_PASSWORD: secret
+    volumes:
+      - arango:/var/lib/arangodb3
+    ports:
+      - 8529:8529
+
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+    volumes:
+      - minio:/data
+    command: server /data
+
+  valkey:
+    image: valkey/valkey:7.2-alpine
+
+volumes:
+  arango:
+  minio:

@@ -1,0 +1,59 @@
+services:
+
+  Test Service:
+    info: This is a test service
+    host: http://test-service:6000
+    health: /api/health
+    api: /api
+    rpc:
+      search_result:
+        access:
+          pre: /api/pre_access_obj_search_result
+          diff:
+            ping:
+              type: string
+            comments:
+              type: array
+              items:
+                type: object
+        create:
+          pre: /api/pre_create_obj_search_result
+          post: /api/post_create_obj_search_result
+          diff:
+            touched:
+              type: string
+          meta:
+            meta:
+              type: string
+        update:
+          pre: /api/pre_update_obj_search_result
+          post: /api/post_update_obj_search_result
+          diff:
+            touched:
+              type: string
+          meta:
+            meta:
+              type: string
+        delete:
+          post: /api/post_delete_obj_search_result
+        relations:
+          comments:
+            access:
+              pre: /api/pre_access_rel_search_result_comments
+            create:
+              pre: /api/pre_create_rel_search_result_comments
+            update:
+              pre: /api/pre_update_rel_search_result_comments
+      notification_rule:
+        create:
+          pre: /api/pre_create_obj_notification_rule
+      meta:
+        create:
+          pre: /api/pre_create_obj_meta
+          post: /api/post_create_obj_meta
+
+  Test Client:
+    info: This is a test client
+    host: http://test-service:6000
+    health: /api/health
+    client: true

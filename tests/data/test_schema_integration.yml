@@ -1,0 +1,369 @@
+all: &all
+  _id:
+    type: string
+    readOnly: true
+  _key:
+    type: string
+    readOnly: true
+  _rev:
+    type: string
+    readOnly: true
+
+edges: &edges
+  _from:
+    type: string
+  _to:
+    type: string
+
+creator: &creator
+  creator:
+    type: string
+    format: _id
+    readOnly: true
+
+created: &created
+  created:
+    type: string
+    format: date-time
+    readOnly: true
+
+updated: &updated
+  updated:
+    type: string
+    format: date-time
+    readOnly: true
+
+# some heavier structures for testing
+expression: &expression
+  type: object
+  additionalProperties: false
+  properties:
+    type:
+      type: string
+    value:
+      type: string
+
+group: &group
+  type: object
+  additionalProperties: false
+  properties:
+    operator:
+      type: string
+    conditions:
+      items:
+        additionalProperties: false
+        required:
+          - array_scope
+          - operator
+          - property
+          - property_type
+          - type
+          - value
+          - value_type
+        properties:
+          array_scope:
+            enum:
+              - ALL
+              - ANY
+              - NONE
+            type: string
+          operator:
+            type: string
+          property:
+            type: string
+          property_type:
+            enum:
+              - array
+              - unknown
+            type: string
+          type:
+            type: string
+          value:
+            type: string
+          value_type:
+            enum:
+              - string
+              - number
+              - boolean
+              - array
+            type: string
+        type: object
+      type: array
+    description:
+      maxLength: 100
+      type: string
+    id:
+      type: string
+    name:
+      maxLength: 20
+      type: string
+
+collections:
+
+  source:
+    type: object
+    properties:
+      <<: [*all, *creator, *created, *updated]
+      active:
+        type: boolean
+        default: true
+      label:
+        type: string
+      data:
+        type: string
+      strings:
+        type: array
+        items:
+          type: string
+      subdoc:
+        type: object
+        properties:
+          data:
+            type: string
+        required:
+          - data
+      nested_subdoc:
+        type: object
+        properties:
+          subdoc:
+            type: object
+            properties:
+              things:
+                type: string
+      subdocs:
+        type: array
+        items:
+          type: object
+          properties:
+            data:
+              type: string
+          required:
+            - data
+      datetime:
+        type: string
+        format: date-time
+      arbitrary_subdoc:
+        type: object
+      arbitrary_subdocs:
+        type: array
+        items:
+          type: object
+      nested_arbitrary_subdoc:
+        type: object
+        properties:
+          arbitrary_subdoc:
+            type: object
+      nested_arbitrary_subdocs:
+        type: array
+        items:
+          type: object
+    required:
+      - label
+      - data
+
+  ruleset:
+    type: object
+    properties:
+      <<: [*all, *creator, *created, *updated]
+      label:
+        type: string
+      rules:
+        type: string
+      expressions:
+        writeOnly: true
+        type: array
+        items:
+          <<: *expression
+      groups:
+        writeOnly: true
+        type: array
+        items:
+          <<: *group
+      additional_data:
+        readOnly: true
+        type: object
+        additionalProperties: false
+        properties:
+          groups:
+            type: array
+            items:
+              <<: *group
+          expression:
+            type: array
+            items:
+              <<: *expression
+          tags:
+            type: array
+            items:
+              type: string
+    required:
+      - label
+      - rules
+
+  data:
+    type: object
+    properties:
+      <<: [*all, *created, *updated]
+      label:
+        type: string
+      data:
+        type:
+          - string
+          - 'null'
+    required:
+      - label
+
+  entity:
+    type: object
+    properties:
+      <<: [*all, *created]
+      label:
+        type: string
+      data:
+        type: string
+    required:
+      - label
+      - data
+
+  grouping:
+    type: object
+    properties:
+      <<: [*all, *creator, *created, *updated]
+      label:
+        type: string
+      data:
+        type: string
+    required:
+      - label
+      - data
+
+  comment:
+    type: object
+    properties:
+      <<: [*all, *creator, *created, *updated]
+      data:
+        type: string
+    required:
+      - data
+
+  talker:
+    type: object
+    properties:
+      <<: [*all, *creator, *created]
+      label:
+        type: string
+        writeOnly: true
+      data:
+        type: object
+        writeOnly: true
+        properties:
+          point:
+            type: string
+            writeOnly: true
+      events:
+        type: array
+        writeOnly: true
+        items:
+          type: string
+          writeOnly: true
+
+  listener:
+    type: object
+    properties:
+      <<: *all
+      label:
+        type: string
+        readOnly: true
+      data:
+        type: object
+        readOnly: true
+
+  defaulter:
+    type: object
+    properties:
+      <<: [*all, *created, *updated]
+      active:
+        type: boolean
+        default: false
+
+  subtyper_a:
+    type: object
+    properties:
+      <<: [*all, *created, *updated]
+      subdoc:
+        type: object
+        properties:
+          subtyper_a_data:
+            type: string
+        required:
+          - data
+
+  subtyper_b:
+    type: object
+    properties:
+      <<: [*all, *created, *updated]
+      subdoc:
+        type: object
+        properties:
+          subtyper_b_data:
+            type: string
+        required:
+          - data
+
+  new_class:
+    type: object
+    properties:
+      <<: [*all, *created, *updated]
+      archived:
+        type: boolean
+        readOnly: true
+      label:
+        type: string
+      data:
+        type: string
+      start_date:
+        type: string
+        format: date-time
+      end_date:
+        nullable: true
+        oneOf:
+          - type: string
+          - type: "null"
+        format: date-time
+
+edge_collections:
+
+  origin:
+    type: object
+    properties:
+      <<: [*all, *edges, *created]
+      cascade:
+        type: boolean
+        default: false
+    required:
+      - _from
+      - _to
+
+  includes:
+    type: object
+    properties:
+      <<: [*all, *edges, *created, *updated]
+      active:
+        type: boolean
+        default: true
+      data:
+        type: string
+    required:
+      - _from
+      - _to
+
+  comment_on:
+    type: object
+    properties:
+      <<: [*all, *edges, *created]
+      active:
+        type: boolean
+        default: true
+    required:
+      - _from
+      - _to

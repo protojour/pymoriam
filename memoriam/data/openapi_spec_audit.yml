@@ -1,0 +1,201 @@
+tags:
+  - name: Audit log
+    description: Audit log endpoints
+
+components:
+  parameters:
+    x-arango-trx-id:
+      name: x-arango-trx-id
+      description: >
+        A valid ArangoDB transaction id,
+        indicating you are querying Memoriam as part of a transaction.
+        Memoriam will use the transaction id in ArangoDB operations when given,
+        but will not commit the transaction.
+      in: header
+      schema:
+        type: string
+
+  schemas:
+    audit_log:
+      type: object
+      properties:
+        operation:
+          type: string
+          description: Type of operation
+          enum:
+            - create
+            - update
+            - delete
+        parent:
+          type:
+            - string
+            - 'null'
+          description: ID of previous audit log event
+        trx_id:
+          type: string
+          description: ID of ArangoDB transaction, if any
+        changed_id:
+          type: string
+          description: ID of changed document
+        from_id:
+          type: string
+          description: _from ID (target) for edge document audits
+        to_id:
+          type: string
+          description: _to ID (source) for edge document audits
+        edge:
+          type: boolean
+          description: Whether this is an edge document audit
+        note:
+          type: string
+          description: Note on why the change was made
+        creator:
+          type: string
+          description: User ID initiating change
+        created:
+          type: string
+          format: date-time
+          description: Datetime of change
+        pre:
+          type: object
+          description: >
+            Changed fields of audited object pre change.
+            Empty for create operations.
+          additionalProperties: true
+        post:
+          type: object
+          description: >
+            Changed fields of audited object post change.
+            Empty for delete operations.
+          additionalProperties: true
+
+paths:
+  /audit_log:
+    post:
+      operationId: memoriam.storage.audit.post_audit_log
+      summary: Manually post audit log entries
+      tags: [Audit log]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  pre:
+                    type: object
+                    description:
+                      Structure of audited object pre change.
+                      Empty for create operations.
+                    additionalProperties: true
+                  post:
+                    type: object
+                    description:
+                      Structure of audited object post change.
+                      Empty for delete operations.
+                    additionalProperties: true
+                  edge:
+                    type: boolean
+                    description: Whether this is an edge document audit
+                    default: False
+                  note:
+                    type: string
+                    description: Optional note on why the change was made
+                required:
+                  - pre
+                  - post
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/audit_log'
+        '401':
+          description: Unauthorized
+
+  /audit_log/{collection}/{_key}:
+    parameters:
+      - name: collection
+        description: Object collection
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: _key
+        description: Object _key
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: memoriam.storage.audit.get_audit_log
+      summary: Get audit log entries
+      tags: [Audit log]
+      parameters:
+        - name: sort
+          description: Attribute to sort by (ascending), optionally prefix by '-' (descending)
+          in: query
+          schema:
+            type: string
+            enum:
+              - created
+              - -created
+            default: created
+          examples:
+            created_ascending:
+              value: created
+              summary: Sort by the field `created`, ascending
+            created_descending:
+              value: -created
+              summary: Sort by the field `created`, descending
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/limit'
+        - name: edges
+          description: >
+            Include edge document audits,
+            where object is source or target of relation
+          schema:
+            type: boolean
+            default: false
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  skip:
+                    type: integer
+                    minimum: 0
+                  limit:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 100
+                  results_total:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 1
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/audit_log'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found

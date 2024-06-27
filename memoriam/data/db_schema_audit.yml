@@ -1,0 +1,74 @@
+all: &all
+  _id:
+    type: string
+    readOnly: true
+  _key:
+    type: string
+    readOnly: true
+  _rev:
+    type: string
+    readOnly: true
+
+creator: &creator
+  creator:
+    type: string
+    format: _id
+    readOnly: true
+
+created: &created
+  created:
+    type: string
+    format: date-time
+    readOnly: true
+
+
+collections:
+
+  audit_log:
+    type: object
+    properties:
+      <<: [*all, *creator, *created]
+      operation:
+        type: string
+        description: Type of operation
+        enum:
+          - create
+          - update
+          - delete
+      parent:
+        type:
+          - string
+          - 'null'
+        description: ID of previous audit log event
+      trx_id:
+        type:
+          - string
+          - 'null'
+        description: ID of ArangoDB transaction, if any
+      changed_id:
+        type: string
+        description: ID of changed document
+      from_id:
+        type: string
+        description: _from ID (target) for edge document audits
+      to_id:
+        type: string
+        description: _to ID (source) for edge document audits
+      edge:
+        type: boolean
+        description: Whether this is an edge document audit
+      note:
+        type: string
+        description: Note on why the change was made
+      pre:
+        type: object
+        description: >
+          Changed fields of audited object pre change.
+          Empty for create operations.
+        additionalProperties: true
+      post:
+        type: object
+        description: >
+          Changed fields of audited object post change.
+          Empty for delete operations.
+        additionalProperties: true

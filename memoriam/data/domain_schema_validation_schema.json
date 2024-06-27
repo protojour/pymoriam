@@ -1,0 +1,130 @@
+{
+  "description": "Validation schema for Memoriam domain schemas",
+  "type": "object",
+  "patternProperties": {
+    "^[\\w\\s]*$": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "Description for the domain class, used for documenting the domain",
+          "type": "string"
+        },
+        "resolver": {
+          "description": "Name of the ArangoDB collection this domain class resolves to",
+          "type": "string"
+        },
+        "class": {
+          "description": "_class attribute to be used when reading or writing domain object",
+          "type": "string"
+        },
+        "alias": {
+          "description": "Name of another domain class defined within this domain",
+          "type": "string"
+        },
+        "permissive": {
+          "description": "Allow additional attributes not covered by the schema to be passed along on input, output, or both, respectively",
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "enum": [
+            "no",
+            "input",
+            "output",
+            "both"
+          ],
+          "default": "no"
+        },
+        "operations": {
+          "description": "List of valid operations on objects of this domain class",
+          "type": "array",
+          "items": {
+            "description": "Name of an operation",
+            "type": "string",
+            "enum": [
+              "create",
+              "read",
+              "update",
+              "delete"
+            ]
+          },
+          "default": [
+            "create",
+            "read",
+            "update",
+            "delete"
+          ]
+        },
+        "constants": {
+          "description": "Map of attributes with constant values",
+          "type": "object",
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_-]+$": {
+              "description": "Value of the constant attribute",
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            }
+          }
+        },
+        "attributes": {
+          "description": "Map of domain class attributes to `resolver` collection attribute names",
+          "type": "object",
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_-]+$": {
+              "description": "Name of an attribute in `resolver`",
+              "type": "string"
+            }
+          }
+        },
+        "relations": {
+          "description": "Map of relations to other domain classes",
+          "type": "object",
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_-]+$": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "description": "Name or list of names of other",
+                  "type": [
+                    "string",
+                    "array"
+                  ]
+                },
+                {
+                  "description": "Name of the ArangoDB edge collection this relation uses",
+                  "type": "string"
+                },
+                {
+                  "description": "Edge (depth/)direction",
+                  "type": "string",
+                  "pattern": "(\\d{1,2}(?:\\.\\.\\d{1,2})\\s?)?(inbound|outbound|any)"
+                }
+              ]
+            }
+          }
+        },
+        "triggers": {
+          "description": "List of trigger functions for common operations",
+          "type": "array",
+          "items": {
+            "description": "Name of a trigger function",
+            "type": "string",
+            "enum": [
+              "set_creator",
+              "set_created",
+              "set_updated",
+              "audit"
+            ]
+          }
+        }
+      },
+      "required": [
+        "description",
+        "resolver"
+      ]
+    }
+  }
+}

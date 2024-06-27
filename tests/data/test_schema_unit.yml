@@ -1,0 +1,42 @@
+all: &all
+  _id:
+    type: string
+    readOnly: true
+  _key:
+    type: string
+    readOnly: true
+  _rev:
+    type: string
+    readOnly: true
+
+edges: &edges
+  _from:
+    type: string
+  _to:
+    type: string
+
+collections:
+
+  data:
+    type: object
+    properties:
+      <<: *all
+      data_type:
+        type: string
+        readOnly: true
+      test_a:
+        type: number
+      test_b:
+        type: integer
+      test_c:
+        type: boolean
+
+edge_collections:
+
+  relation:
+    type: object
+    properties:
+      <<: [*all, *edges]
+    required:
+      - _from
+      - _to

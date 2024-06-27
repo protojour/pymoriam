@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Memoriam Domain GraphiQL</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//unpkg.com/graphiql/graphiql.min.css" />
+    <link rel="shortcut icon" href="/favicon.png"/>
+    <script crossorigin src="//unpkg.com/react/umd/react.production.min.js"></script>
+    <script crossorigin src="//unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="//unpkg.com/graphiql/graphiql.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        height: 100vh;
+      }
+      .graphiql-container .CodeMirror {
+        font-size: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      const fetcher = GraphiQL.createFetcher({ url: window.location })
+      ReactDOM.render(
+        React.createElement(GraphiQL, {
+          fetcher,
+          defaultSecondaryEditorOpen: true,
+          docExplorerOpen: true,
+        }),
+        document.getElementById('root'),
+      )
+    </script>
+  </body>
+</html>

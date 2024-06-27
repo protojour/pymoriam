@@ -1,0 +1,1872 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "items": {
+    "anyOf": [
+      {
+        "properties": {
+          "create user": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"],
+                "required": [
+                  "password",
+                  "firstName",
+                  "lastName"
+                ]
+              }
+            },
+            "type": "object",
+            "title": "username"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update user": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "username"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set user": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "username"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "remove user": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {},
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "username"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "create service": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "oneOf": [
+                  {
+                    "required": [
+                      "ownerEID"
+                    ],
+                    "title": "ownerEID"
+                  },
+                  {
+                    "required": [
+                      "ownerUsername"
+                    ],
+                    "title": "ownerUsername"
+                  },
+                  {
+                    "required": [
+                      "ownerServiceName"
+                    ],
+                    "title": "ownerServiceName"
+                  }
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "serviceSecret": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "host": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "ownerEID": {
+                    "type": "integer"
+                  },
+                  "ownerUsername": {
+                    "type": "string"
+                  },
+                  "ownerServiceName": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"],
+                "required": [
+                  "serviceSecret"
+                ]
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update service": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "serviceSecret": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "host": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "ownerEID": {
+                    "type": "integer"
+                  },
+                  "ownerUsername": {
+                    "type": "string"
+                  },
+                  "ownerServiceName": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set service": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "serviceSecret": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "host": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "ownerEID": {
+                    "type": "integer"
+                  },
+                  "ownerUsername": {
+                    "type": "string"
+                  },
+                  "ownerServiceName": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "remove service": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {},
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "create contract": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "usernames"
+                    ],
+                    "title": "usernames"
+                  },
+                  {
+                    "required": [
+                      "serviceNames"
+                    ],
+                    "title": "serviceNames"
+                  },
+                  {
+                    "required": [
+                      "groupNames"
+                    ],
+                    "title": "groupNames"
+                  }
+                ],
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "groupNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update contract": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "usernames"
+                    ],
+                    "title": "usernames"
+                  },
+                  {
+                    "required": [
+                      "serviceNames"
+                    ],
+                    "title": "serviceNames"
+                  },
+                  {
+                    "required": [
+                      "groupNames"
+                    ],
+                    "title": "groupNames"
+                  }
+                ],
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "groupNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set contract": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "usernames"
+                    ],
+                    "title": "usernames"
+                  },
+                  {
+                    "required": [
+                      "serviceNames"
+                    ],
+                    "title": "serviceNames"
+                  },
+                  {
+                    "required": [
+                      "groupNames"
+                    ],
+                    "title": "groupNames"
+                  }
+                ],
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "groupNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "remove contract": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "usernames"
+                    ],
+                    "title": "usernames"
+                  },
+                  {
+                    "required": [
+                      "serviceNames"
+                    ],
+                    "title": "serviceNames"
+                  },
+                  {
+                    "required": [
+                      "groupNames"
+                    ],
+                    "title": "groupNames"
+                  }
+                ],
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "groupNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "create role": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "usernames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "serviceNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "groupNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "roleName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update role": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "usernames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "serviceNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "groupNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "roleName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set role": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "usernames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "serviceNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "groupNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "roleName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "remove role": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "usernames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "serviceNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "groupNames": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "roleName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "create resource": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "env": {
+                        "patternProperties": {
+                          "^[A-Za-z][A-Za-z0-9_-]+$": {
+                            "type": ["string", "boolean", "integer", "number"]
+                          }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "additionalProperties": {
+                      "properties": {
+                        "default": {
+                          "type": "string",
+                          "enum": [
+                            "ALLOW",
+                            "DENY"
+                          ]
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "title": "Policy"
+                      },
+                      "propertyNames": {
+                        "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "propertyNames": {
+                      "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                    },
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "resourceName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update resource": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "env": {
+                        "patternProperties": {
+                          "^[A-Za-z][A-Za-z0-9_-]+$": {
+                            "type": ["string", "boolean", "integer", "number"]
+                          }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "additionalProperties": {
+                      "properties": {
+                        "default": {
+                          "type": "string",
+                          "enum": [
+                            "ALLOW",
+                            "DENY"
+                          ]
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "title": "Policy"
+                      },
+                      "propertyNames": {
+                        "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "propertyNames": {
+                      "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                    },
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "resourceName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set resource": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "env": {
+                        "patternProperties": {
+                          "^[A-Za-z][A-Za-z0-9_-]+$": {
+                            "type": ["string", "boolean", "integer", "number"]
+                          }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "additionalProperties": {
+                      "properties": {
+                        "default": {
+                          "type": "string",
+                          "enum": [
+                            "ALLOW",
+                            "DENY"
+                          ]
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "title": "Policy"
+                      },
+                      "propertyNames": {
+                        "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "propertyNames": {
+                      "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                    },
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "resourceName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "remove resource": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {},
+                    "additionalProperties": {
+                      "properties": {},
+                      "additionalProperties": {
+                        "type": "null",
+                        "title": "Policy"
+                      },
+                      "propertyNames": {
+                        "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "propertyNames": {
+                      "pattern": "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_ -]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_ -]+$)"
+                    },
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": "object",
+                "title": "resourceName"
+              }
+            },
+            "type": "object",
+            "title": "serviceName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "create group": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "groupName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update group": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "groupName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set group": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "groupName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "remove group": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "usernames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "serviceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "groupName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update authority": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "strategies": {
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                        "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                      ]
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "authorityName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set authority": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "strategies": {
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                        "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                      ]
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "authorityName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "create source": {
+            "patternProperties": {
+              "^[Ll][Dd][Aa][Pp]$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "strategies": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                            "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "hostname": {
+                        "type": "string"
+                      },
+                      "port": {
+                        "type": "string"
+                      },
+                      "tlsPort": {
+                        "type": "string"
+                      },
+                      "tlsEnabled": {
+                        "type": "boolean"
+                      },
+                      "readOnlyDN": {
+                        "type": "string"
+                      },
+                      "readOnlyPass": {
+                        "type": "string"
+                      },
+                      "baseDN": {
+                        "type": "string"
+                      },
+                      "bindDNTemplate": {
+                        "type": "string"
+                      },
+                      "userSyncFilter": {
+                        "type": "string"
+                      },
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"],
+                    "required": [
+                      "enabled",
+                      "hostname",
+                      "port",
+                      "tlsPort",
+                      "tlsEnabled",
+                      "readOnlyDN",
+                      "readOnlyPass",
+                      "baseDN",
+                      "bindDNTemplate",
+                      "userSyncFilter"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              },
+              "^[Oo][Aa][Uu][Tt][Hh]2$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "strategies": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                            "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "clientID": {
+                        "type": "string"
+                      },
+                      "clientSecret": {
+                        "type": "string"
+                      },
+                      "authURL": {
+                        "type": "string"
+                      },
+                      "tokenURL": {
+                        "type": "string"
+                      },
+                      "deviceAuthURL": {
+                        "type": "string"
+                      },
+                      "userInfoURL": {
+                        "type": "string"
+                      },
+                      "flows": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "AUTHORIZATION_CODE",
+                            "CREDENTIALS"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "scopes": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"],
+                    "required": [
+                      "enabled",
+                      "clientID",
+                      "clientSecret",
+                      "authURL",
+                      "tokenURL",
+                      "userInfoURL"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "authorityName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "update source": {
+            "patternProperties": {
+              "^[Ll][Dd][Aa][Pp]$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "strategies": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                            "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "hostname": {
+                        "type": "string"
+                      },
+                      "port": {
+                        "type": "string"
+                      },
+                      "tlsPort": {
+                        "type": "string"
+                      },
+                      "tlsEnabled": {
+                        "type": "boolean"
+                      },
+                      "readOnlyDN": {
+                        "type": "string"
+                      },
+                      "readOnlyPass": {
+                        "type": "string"
+                      },
+                      "baseDN": {
+                        "type": "string"
+                      },
+                      "bindDNTemplate": {
+                        "type": "string"
+                      },
+                      "userSyncFilter": {
+                        "type": "string"
+                      },
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              },
+              "^[Oo][Aa][Uu][Tt][Hh]2$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "strategies": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                            "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "clientID": {
+                        "type": "string"
+                      },
+                      "clientSecret": {
+                        "type": "string"
+                      },
+                      "authURL": {
+                        "type": "string"
+                      },
+                      "tokenURL": {
+                        "type": "string"
+                      },
+                      "deviceAuthURL": {
+                        "type": "string"
+                      },
+                      "userInfoURL": {
+                        "type": "string"
+                      },
+                      "flows": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "AUTHORIZATION_CODE",
+                            "CREDENTIALS"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "scopes": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "authorityName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "set source": {
+            "patternProperties": {
+              "^[Ll][Dd][Aa][Pp]$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "strategies": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                            "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "hostname": {
+                        "type": "string"
+                      },
+                      "port": {
+                        "type": "string"
+                      },
+                      "tlsPort": {
+                        "type": "string"
+                      },
+                      "tlsEnabled": {
+                        "type": "boolean"
+                      },
+                      "readOnlyDN": {
+                        "type": "string"
+                      },
+                      "readOnlyPass": {
+                        "type": "string"
+                      },
+                      "baseDN": {
+                        "type": "string"
+                      },
+                      "bindDNTemplate": {
+                        "type": "string"
+                      },
+                      "userSyncFilter": {
+                        "type": "string"
+                      },
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              },
+              "^[Oo][Aa][Uu][Tt][Hh]2$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "strategies": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "LINK_EQUAL_AUTHORITY_EMAIL_ON_AUTHENTICATION",
+                            "CREATE_ACCOUNT_ON_AUTHENTICATION"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "clientID": {
+                        "type": "string"
+                      },
+                      "clientSecret": {
+                        "type": "string"
+                      },
+                      "authURL": {
+                        "type": "string"
+                      },
+                      "tokenURL": {
+                        "type": "string"
+                      },
+                      "deviceAuthURL": {
+                        "type": "string"
+                      },
+                      "userInfoURL": {
+                        "type": "string"
+                      },
+                      "flows": {
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "AUTHORIZATION_CODE",
+                            "CREDENTIALS"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "scopes": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "authorityName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "remove source": {
+            "patternProperties": {
+              "^[Ll][Dd][Aa][Pp]$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {},
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              },
+              "^[Oo][Aa][Uu][Tt][Hh]2$": {
+                "patternProperties": {
+                  "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                    "properties": {
+                      "scopes": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "authParams": {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "defaultValue": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "description",
+                            "required"
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "userTemplate": {
+                        "properties": {},
+                        "additionalProperties": false,
+                        "type": ["object", "null"]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "type": ["object", "null"]
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "sourceName"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "authorityName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      {
+        "properties": {
+          "run sync": {
+            "patternProperties": {
+              "(^{{[ ]+\\.[A-Za-z][A-Za-z0-9_-]+[ ]+}}$)|(^[A-Za-z][A-Za-z0-9_-]+$)": {
+                "properties": {
+                  "sourceNames": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "additionalProperties": false,
+                "type": ["object", "null"]
+              }
+            },
+            "type": "object",
+            "title": "authorityName"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      }
+    ]
+  },
+  "type": "array"
+}

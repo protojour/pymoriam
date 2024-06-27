@@ -1,0 +1,1788 @@
+openapi: 3.1.0
+
+info:
+  title: {{ domain.label }} API
+  description: {{ domain.description }}
+  version: '{{ domain.version }}'
+  x-logo:
+    url: /docs/_static/memoriam.png
+    altText: Memoriam
+
+servers:
+  - url: /{{ domain.label | snakecase }}/api
+
+tags:
+  - name: search
+    description: Fulltext search
+  {% for class_name, class_spec in schema.items() %}
+  {% if not class_spec.alias %}
+  - name: {{ class_name }}
+    description: {{ class_spec.description }}
+  {% endif %}
+  {% endfor %}
+
+components:
+
+  securitySchemes:
+    Authorization header:
+      type: http
+      scheme: bearer
+    Session cookie:
+      type: apiKey
+      in: cookie
+      name: session-cookie
+
+  parameters:
+    _key:
+      name: _key
+      in: path
+      required: true
+      schema:
+        type: string
+        description: Identifier key for an object
+    skip:
+      name: skip
+      description: Number of items to skip in results
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+    limit:
+      name: limit
+      description: Number of items to limit results to
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: {{ default_limit }}
+    sort:
+      name: sort
+      description: Attribute to sort by (ascending), optionally prefix by '-' (descending)
+      in: query
+      schema:
+        type: string
+      examples:
+        label_ascending:
+          value: label
+          summary: Sort by the field `label`, ascending
+        created_descending:
+          value: -created
+          summary: Sort by the field `created`, descending
+    field:
+      name: field
+      description: Fields to include in response. No value will return all fields.
+      in: query
+      schema:
+        type: string
+      examples:
+        label:
+          value: label
+          summary: Include only the field `label`
+        three:
+          value:
+            - label
+            - created
+            - updated
+          summary: Include only the fields `label`, `created` and `updated`
+    field_recursive:
+      name: field
+      description: Fields to include in response. No value will return all fields.
+      in: query
+      schema:
+        type: string
+      examples:
+        label:
+          value: label
+          summary: Include only the field `label`
+        three:
+          value:
+            - name
+            - friends.name
+            - friends.friends.name
+          summary: >
+            Given `friends` and `friends.friends` in `relation`,
+            include only the field `name` on the parent object,
+            only the field `name` for each result in `friends`,
+            and only the field `name` for each result in their `friends`.
+    relation:
+      name: relation
+      description: >
+        Related objects to include in response, using `relations` as specified in domain schema.
+      in: query
+      schema:
+        type: string
+      examples:
+        friends:
+          value: friends
+          summary: Include related objects for the relation `friends`
+        three:
+          value:
+            - friends
+            - followers
+            - follows
+          summary: Include related objects for the relations `friends`, `followers` and `follows`
+    filter:
+      name: filter
+      description: >
+        AQL-like filter statements composed of domain object field,
+        comparison operator, and comparison value.
+        These values are space-separated,
+        so comparison operators are concatenated,
+        but spaces may be used in comparison values.
+        String comparison values must use double quotes.
+        Multiple filters are allowed, and will be applied in order.
+      in: query
+      schema:
+        type: string
+      examples: &filter_examples
+        eq:
+          value: category == 5
+          summary: Equality
+        not_eq:
+          value: category != 1
+          summary: Inequality
+        lt:
+          value: category < 5
+          summary: Less than
+        lte:
+          value: category <= 3
+          summary: Less than or equal
+        gt:
+          value: category > 3
+          summary: Greater than
+        gte:
+          value: category >= 3
+          summary: Greater than or equal
+        in:
+          value: category IN [1, 2, 3]
+          summary: Set membership
+        not_in:
+          value: category NOTIN [4, 5]
+          summary: Set non-membership
+        like:
+          value: text LIKE "prefix%"
+          summary: Partial string matching
+        not_like:
+          value: text NOTLIKE "%suffix"
+          summary: Partial string non-matching
+        like_sh:
+          value: text =~ "prefix%"
+          summary: Partial string matching (shorthand)
+        not_like_sh:
+          value: text !~ "%suffix"
+          summary: Partial string non-matching (shorthand)
+    edge_filter:
+      name: edge_filter
+      description: >
+        AQL-like filter statements composed of edge attribute field,
+        comparison operator, and comparison value.
+        These values are space-separated,
+        so comparison operators are concatenated,
+        but spaces may be used in comparison values.
+        String comparison values must use double quotes.
+        Multiple filters are allowed, and will be applied in order.
+      in: query
+      schema:
+        type: string
+      examples: *filter_examples
+    filter_recursive:
+      name: filter
+      description: >
+        AQL-like filter statements composed of domain object field,
+        comparison operator, and comparison value.
+        These values are space-separated,
+        so comparison operators are concatenated,
+        but spaces may be used in comparison values.
+        String comparison values must use double quotes.
+        Multiple filters are allowed, and will be applied in order.
+        For single-object queries, this parameter is only applied for relations.
+      in: query
+      schema:
+        type: string
+      examples: &filter_recursive_examples
+        eq:
+          value: category == 5
+          summary: Equality
+        not_eq:
+          value: category != 1
+          summary: Inequality
+        lt:
+          value: category < 5
+          summary: Less than
+        lte:
+          value: category <= 3
+          summary: Less than or equal
+        gt:
+          value: category > 3
+          summary: Greater than
+        gte:
+          value: category >= 3
+          summary: Greater than or equal
+        in:
+          value: category IN [1, 2, 3]
+          summary: Set membership
+        not_in:
+          value: category NOTIN [4, 5]
+          summary: Set non-membership
+        like:
+          value: text LIKE "prefix%"
+          summary: Partial string matching
+        not_like:
+          value: text NOTLIKE "%suffix"
+          summary: Partial string non-matching
+        like_sh:
+          value: text =~ "prefix%"
+          summary: Partial string matching (shorthand)
+        not_like_sh:
+          value: text !~ "%suffix"
+          summary: Partial string non-matching (shorthand)
+        rel_eq:
+          value: friends.category == 5
+          summary: Filter for `relation` "friends"
+        rel_rel_eq:
+          value: friends.friends.category == 5
+          summary: Filter for `relation` "friends.friends" (recursive)
+    edge_filter_recursive:
+      name: edge_filter
+      description: >
+        AQL-like filter statements composed of edge attribute field,
+        comparison operator, and comparison value.
+        These values are space-separated,
+        so comparison operators are concatenated,
+        but spaces may be used in comparison values.
+        String comparison values must use double quotes.
+        Multiple filters are allowed, and will be applied in order.
+        For single-object queries, this parameter is only applied for relations.
+      in: query
+      schema:
+        type: string
+      examples: *filter_recursive_examples
+    parent_filter:
+      name: parent_filter
+      description: >
+        Given a `relation` parameter and the same value for `parent_filter`,
+        only return the parent object if there are hits on `relation`.
+        For single-object queries, this parameter is only applied for relations.
+      in: query
+      schema:
+        type: string
+      examples:
+        friends:
+          value: friends
+          summary: >
+            Given the `friends` as a `relation` parameter,
+            only return the parent object if it has any `friends`.
+    search:
+      name: search
+      description: Query for fulltext domain search
+      in: query
+      schema:
+        type: string
+      examples:
+        - "needle"
+    sync:
+      name: sync
+      description: >
+        Wait until documents have been synced to disk
+      in: query
+      schema:
+        type: boolean
+        default: true
+    new:
+      name: new
+      description: >
+        Return the complete new document as `new` in the result
+      in: query
+      schema:
+        type: boolean
+        default: true
+    old:
+      name: old
+      description: >
+        Return the complete old document as `old` in the result
+      in: query
+      schema:
+        type: boolean
+        default: true
+    mode:
+      name: mode
+      description: |
+        `"ignore"`: if a document with the specified `_key` value exists already, nothing is done and no write operation is carried out. Not compatible with `old`.
+        `"replace"`: if a document with the specified `_key` value exists already, it is overwritten with the specified document value.
+        `"update"`: if a document with the specified `_key` value exists already, it is patched with the specified document value.
+        `"conflict"`: if a document with the specified `_key` value exists already, return a unique constraint violation error so that the insert operation fails.
+      in: query
+      schema:
+        type: string
+        default: conflict
+        enum: [ignore, replace, update, conflict]
+    keep_null:
+      name: keep_null
+      description: >
+        If `false`, remove any attributes from existing documents contained
+        in the patch document with an attribute value of `null`
+      in: query
+      schema:
+        type: boolean
+        default: true
+    merge:
+      name: merge
+      description: >
+        Merge object structures in payload with existing objects?
+        By default (false), objects in payload will replace existing objects.
+      in: query
+      schema:
+        type: boolean
+        default: false
+    x-arango-trx-id:
+      name: x-arango-trx-id
+      description: >
+        A valid ArangoDB transaction id,
+        indicating you are querying Memoriam as part of a transaction.
+        Memoriam will use the transaction id in ArangoDB operations when given,
+        but will not commit the transaction.
+      in: header
+      schema:
+        type: string
+
+  schemas:
+    {% for class_name, class_spec in schema.items() %}
+    {{ class_name }}_partial:
+      type: object
+      title: {{ class_spec.alias or class_name }}
+      description: {{ class_spec.description }}
+      properties:
+        _meta:
+          type: object
+          description: >
+            The _meta object is used for intercommunication between
+            clients and RPC controllers. _meta is never stored in the database.
+            Documented _meta keys may be acted upon by Memoriam,
+            but otherwise the _meta structure can be freely used,
+            and is passed on verbatim to pre- and post-RPC controllers.
+          writeOnly: true
+          properties:
+            note:
+              type: string
+              description: >
+                Optional note on why the change was made,
+                added to audit log if the audit trigger is set
+              writeOnly: true
+            {% for listener in class_spec.listeners %}
+            {% for prop_name, prop_spec in listener.get('update', {}).get('meta', {}).items() %}
+            {{ prop_name }}:
+              {{ prop_spec | yaml | indent(14) }}
+              writeOnly: true
+            {% endfor %}
+            {% endfor %}
+          additionalProperties: true
+          {% set ns = namespace(required_added=false) %}
+          {% for listener in class_spec.listeners %}
+          {% for prop_name in listener.get('update', {}).get('meta', {}) %}
+          {% if not ns.required_added %}
+          required:
+          {% set ns.required_added = true %}
+          {% endif %}
+            - {{ prop_name }}
+          {% endfor %}
+          {% endfor %}
+        {% if class_spec.constants %}
+        {% for field_name, value in class_spec.constants.items() %}
+        {{ field_name }}:
+          type: {{ value | get_type }}
+          {% if value | get_type == 'number' %}
+          format: float
+          {% endif %}
+          readOnly: true
+          enum: [{{ value }}]
+        {% endfor %}
+        {% endif %}
+        {% if class_spec.attributes %}
+        {% for field_name, field_spec in class_spec.attributes.items() %}
+        {{ field_name }}:
+          {{ db_schema.collections.get(class_spec.resolver, {}).get('properties', {}).get(field_spec, {}) | yaml | indent(10) }}
+        {% endfor %}
+        {% endif %}
+        {% for listener in class_spec.listeners %}
+        {% for prop_name, prop_spec in listener.get('update', {}).get('diff', {}).items() %}
+        {{ prop_name }}:
+          {{ prop_spec | yaml | indent(10) }}
+          readOnly: true
+        {% endfor %}
+        {% endfor %}
+      additionalProperties: {{ (class_spec.permissive in ['input', 'both']) | string | lower }}
+
+    {{ class_name }}:
+      type: object
+      title: {{ class_spec.alias or class_name }}
+      description: {{ class_spec.description }}
+      properties:
+        _meta:
+          type: object
+          description: >
+            The _meta object is used for intercommunication between
+            clients and RPC controllers. _meta is never stored in the database.
+            Documented _meta keys may be acted upon by Memoriam,
+            but otherwise the _meta structure can be freely used,
+            and is passed on verbatim to pre- and post-RPC controllers.
+          writeOnly: true
+          properties:
+            note:
+              type: string
+              description: >
+                Optional note on why the change was made,
+                added to audit log if the audit trigger is set
+              writeOnly: true
+            {% for listener in class_spec.listeners %}
+            {% for prop_name, prop_spec in listener.get('create', {}).get('meta', {}).items() %}
+            {{ prop_name }}:
+              {{ prop_spec | yaml | indent(14) }}
+              writeOnly: true
+            {% endfor %}
+            {% endfor %}
+          additionalProperties: true
+          {% set ns = namespace(required_added=false) %}
+          {% for listener in class_spec.listeners %}
+          {% for prop_name in listener.get('create', {}).get('meta', {}) %}
+          {% if not ns.required_added %}
+          required:
+          {% set ns.required_added = true %}
+          {% endif %}
+            - {{ prop_name }}
+          {% endfor %}
+          {% endfor %}
+        {% if class_spec.attributes %}
+        {% for field_name, field_spec in class_spec.attributes.items() %}
+        {{ field_name }}:
+          {{ db_schema.collections.get(class_spec.resolver, {}).get('properties', {}).get(field_spec, {}) | yaml | indent(10) }}
+        {% endfor %}
+        {% endif %}
+        {% for listener in class_spec.listeners %}
+        {% for prop_name, prop_spec in listener.get('create', {}).get('diff', {}).items() %}
+        {{ prop_name }}:
+          {{ prop_spec | yaml | indent(10) }}
+          readOnly: true
+        {% endfor %}
+        {% endfor %}
+      additionalProperties: {{ (class_spec.permissive in ['input', 'both']) | string | lower }}
+      {% if class_spec.attributes %}
+      {% set ns = namespace(required_added=false) %}
+      {% for field_name, field_spec in class_spec.attributes.items() %}
+      {% if field_spec in db_schema.collections.get(class_spec.resolver, {}).required %}
+      {% if not ns.required_added %}
+      required:
+      {% set ns.required_added = true %}
+      {% endif %}
+        - {{ field_name }}
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+
+    {{ class_name }}_output:
+      allOf:
+        - type: object
+          properties:
+            _key:
+              type: string
+              description: Identifier key of the object
+              readOnly: true
+            _class:
+              type: string
+              description: Domain class of the object
+              readOnly: true
+              enum: [{{ class_spec.alias or class_spec.class or class_name }}]
+            {% for listener in class_spec.listeners %}
+            {% for prop_name, prop_spec in listener.get('access', {}).get('diff', {}).items() %}
+            {{ prop_name }}:
+              {{ prop_spec | yaml | indent(14) }}
+              readOnly: true
+            {% endfor %}
+            {% endfor %}
+        - $ref: '#/components/schemas/{{ class_name }}_partial'
+
+    {{ class_name }}_relation:
+      allOf:
+        - type: object
+          properties:
+            _class:
+              type: string
+              description: Domain class of the object
+              enum: [{{ class_spec.alias or class_spec.class or class_name }}]
+          required:
+            - _class
+        - $ref: '#/components/schemas/{{ class_name }}_partial'
+
+    {{ class_name }}_relation_output:
+      allOf:
+        - type: object
+          properties:
+            _key:
+              type: string
+              description: Identifier key of the object
+              readOnly: true
+            _class:
+              type: string
+              description: Domain class of the object
+              readOnly: true
+              enum: [{{ class_spec.alias or class_spec.class or class_name }}]
+        - $ref: '#/components/schemas/{{ class_name }}_partial'
+
+    {% else %}
+      {}
+    {% endfor %}
+
+    {% for collection_name, collection_spec in db_schema.collections.items() %}
+    resolver_{{ collection_name }}_partial:
+      type: object
+      {% set ns = namespace(coll_props=false) %}
+      {% for prop_name, prop_spec in collection_spec.properties.items() %}
+      {% if prop_name not in reserved_fields and not prop_spec.readOnly %}
+      {% set ns.coll_props = true %}
+      {% endif %}
+      {% endfor %}
+      {% if ns.coll_props %}
+      properties:
+        {% for prop_name, prop_spec in collection_spec.properties.items() %}
+        {% if prop_name not in reserved_fields and not prop_spec.readOnly %}
+        {{ prop_name }}:
+          {% for attr_name, attr_spec in prop_spec.items() %}
+          {{ attr_name }}:
+            {{ attr_spec | yaml | indent(12) }}
+          {% endfor %}
+        {% endif %}
+        {% endfor %}
+      {% endif %}
+
+    resolver_{{ collection_name }}:
+      type: object
+      properties:
+        {% for prop_name, prop_spec in collection_spec.properties.items() %}
+        {% if prop_name not in reserved_fields %}
+        {% set ns = namespace(attr_props=false) %}
+        {% for attr_name, attr_spec in prop_spec.items() %}
+        {% if attr_name not in ['readOnly', 'writeOnly'] %}
+        {% set ns.attr_props = true %}
+        {% endif %}
+        {% endfor %}
+        {% if ns.attr_props %}
+        {{ prop_name }}:
+          {% for attr_name, attr_spec in prop_spec.items() %}
+          {% if attr_name not in ['readOnly', 'writeOnly'] %}
+          {{ attr_name }}:
+            {{ attr_spec | yaml | indent(12) }}
+          {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+    {% if include_changes_api %}
+    audit_log:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID of audit event
+        _key:
+          type: string
+          description: _key of audit event
+        _rev:
+          type: string
+          description: _rev of audit event
+        operation:
+          type: string
+          description: Type of operation
+          enum:
+            - create
+            - update
+            - delete
+        parent:
+          type:
+            - string
+            - 'null'
+          description: ID of previous audit log event
+        trx_id:
+          type:
+            - string
+            - 'null'
+          description: ID of ArangoDB transaction, if any
+        changed_id:
+          type: string
+          description: ID of changed document
+        from_id:
+          type: string
+          description: _from ID (target) for edge document audits
+        to_id:
+          type: string
+          description: _to ID (source) for edge document audits
+        edge:
+          type: boolean
+          description: Whether this is an edge document audit
+        note:
+          type: string
+          description: Note on why the change was made
+        creator:
+          type: string
+          description: User ID initiating change
+        created:
+          type: string
+          format: date-time
+          description: Datetime of change
+        pre:
+          type: object
+          description: >
+            Changed fields of audited object pre change.
+            Empty for create operations.
+          additionalProperties: true
+        post:
+          type: object
+          description: >
+            Changed fields of audited object post change.
+            Empty for delete operations.
+          additionalProperties: true
+    {% endif %}
+
+security:
+  - Authorization header: []
+  - Session cookie: []
+
+paths:
+  /search:
+    get:
+      summary: Search all indexed domain objects
+      description: >
+        Fulltext search for all indexed domain objects
+      tags: [search]
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/limit'
+        - name: search
+          description: Query for fulltext search
+          in: query
+          required: true
+          schema:
+            type: string
+          examples:
+            - "needle"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  skip:
+                    type: integer
+                    minimum: 0
+                  limit:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 100
+                  results_total:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 1
+                  results:
+                    type: array
+                    items:
+                      {% if indexed_classes %}
+                      oneOf:
+                        {% for class_name in indexed_classes %}
+                        - $ref: '#/components/schemas/{{ class_name }}_output'
+                        {% endfor %}
+                      {% else %}
+                      type: object
+                      {% endif %}
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+
+  {% for class_name, class_spec in schema.items() %}
+  {% if not class_spec.alias %}
+  {% set operations = class_spec.operations %}
+  {% if 'read' in operations or 'create' in operations %}
+  /{{ class_name }}:
+    {% if 'read' in operations %}
+    get:
+      summary: List {{ class_name }} objects
+      description: >
+        List `{{ class_name }}` objects.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/relation'
+        - $ref: '#/components/parameters/field_recursive'
+        - $ref: '#/components/parameters/filter_recursive'
+        - $ref: '#/components/parameters/edge_filter_recursive'
+        - $ref: '#/components/parameters/parent_filter'
+        - $ref: '#/components/parameters/search'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  skip:
+                    type: integer
+                    minimum: 0
+                  limit:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 100
+                  results_total:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 1
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/{{ class_spec.read_class }}_output'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    {% endif %}
+    {% if 'create' in operations %}
+    post:
+      summary: Create {{ class_name }} object
+      description: >
+        Create a new `{{ class_name }}` object.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/{{ class_spec.create_class }}'
+      responses:
+        '201':
+          description: Object created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/{{ class_spec.create_class }}_output'
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+
+    {% endif %}
+  {% endif %}
+  {% if 'read' in operations or 'update' in operations or 'delete' in operations %}
+  /{{ class_name }}/{_key}:
+    parameters:
+      - $ref: '#/components/parameters/_key'
+    {% if 'read' in operations %}
+    get:
+      summary: Get {{ class_name }} object
+      description: >
+        Get the `{{ class_name }}` object identified by `_key`.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/relation'
+        - $ref: '#/components/parameters/field_recursive'
+        - $ref: '#/components/parameters/filter_recursive'
+        - $ref: '#/components/parameters/edge_filter_recursive'
+        - $ref: '#/components/parameters/parent_filter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/{{ class_spec.read_class }}_output'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+
+    {% endif %}
+    {% if 'update' in operations %}
+    patch:
+      summary: Update {{ class_name }} object
+      description: >
+        Partially update the `{{ class_name }}` object identified by `_key`.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+        - $ref: '#/components/parameters/merge'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/{{ class_spec.update_class }}_partial'
+                - type: object
+                  minProperties: 1
+      responses:
+        '200':
+          description: Object updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/{{ class_spec.update_class }}_partial'
+                  - type: object
+                    minProperties: 1
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    {% endif %}
+    {% if 'delete' in operations %}
+    delete:
+      summary: Delete {{ class_name }} object
+      description: >
+        Delete the `{{ class_name }}` object identified by `_key`.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      responses:
+        '204':
+          description: Object deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '405':
+          description: Method not allowed
+
+    {% endif %}
+  {% endif %}
+  {% if 'create' in operations or 'update' in operations or 'delete' in operations %}
+  /{{ class_name }}/_bulk:
+    {% if 'create' in operations %}
+    post:
+      summary: Create multiple {{ class_name }} objects
+      description: >
+        Create multiple new `{{ class_name }}` objects.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+        - $ref: '#/components/parameters/sync'
+        - $ref: '#/components/parameters/new'
+        - $ref: '#/components/parameters/mode'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/{{ class_spec.create_class }}'
+      responses:
+        '201':
+          description: Objects created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/{{ class_spec.read_class }}_output'
+        '202':
+          description: Objects created (async)
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+
+    {% endif %}
+    {% if 'update' in operations %}
+    patch:
+      summary: Update multiple {{ class_name }} objects
+      description: >
+        Partially update `{{ class_name }}` objects identified by `_key`.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+        - $ref: '#/components/parameters/sync'
+        - $ref: '#/components/parameters/new'
+        - $ref: '#/components/parameters/old'
+        - $ref: '#/components/parameters/keep_null'
+        - $ref: '#/components/parameters/merge'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                minProperties: 1
+                properties:
+                  _key:
+                    type: string
+                    description: Identifier key of the object
+                required:
+                  - _key
+      responses:
+        '200':
+          description: Objects updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _key:
+                      type: string
+                      description: Identifier key of the object
+        '202':
+          description: Objects updated (async)
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    {% endif %}
+    {% if 'delete' in operations %}
+    delete:
+      summary: Delete multiple {{ class_name }} objects
+      description: >
+        Delete `{{ class_name }}` objects identified by `_key`.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+        - $ref: '#/components/parameters/sync'
+        - $ref: '#/components/parameters/old'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  _key:
+                    type: string
+                    description: Identifier key of the object
+                required:
+                  - _key
+      responses:
+        '200':
+          description: Objects deleted
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _key:
+                      type: string
+                      description: Identifier key of the object
+        '202':
+          description: Objects deleted (async)
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '405':
+          description: Method not allowed
+
+    {% endif %}
+  {% endif %}
+  {% if class_spec.relations %}
+  {% for field_name, relation_spec in class_spec.relations.items() %}
+
+  {% set targets = relation_spec.0 %}
+  {% if targets is string %}
+  {% set targets = [targets] %}
+  {% endif %}
+  {% if targets.0 == 'ANY' %}
+  {% set targets = schema.keys() %}
+  {% endif %}
+
+  {% set direction = relation_spec.2 %}
+  {% if ' ' in direction %}
+  {% set depth, direction = direction.split(' ') %}
+  {% endif %}
+
+  {% if operations | length > 0 %}
+  /{{ class_name }}/{_key}/_neighbors:
+    parameters:
+      - $ref: '#/components/parameters/_key'
+    {% if 'read' in operations %}
+    get:
+      summary: Get {{ class_name }} direct graph neighbors
+      description: >
+        List relationships between this object and direct neighbors encoded as nodes and edges.
+      tags: [{{ class_name }}]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodes:
+                    type: array
+                    items:
+                      oneOf:
+                        {% for class_name in indexed_classes %}
+                        - allOf:
+                          - type: object
+                            properties:
+                              _id:
+                                type: string
+                                description: Node identifier used in edges
+                          - $ref: '#/components/schemas/{{ class_name }}_output'
+                        {% endfor %}
+                  edges:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _from:
+                          type: string
+                          description: Node id of the starting point of this edge
+                        _to:
+                          type: string
+                          description: Node id of the ending point of this edge
+                        _relations:
+                          type: array
+                          description: List of {{ class_name }} relation labels representing this relationship
+                          items:
+                            type: string
+                        _external_relations:
+                          type: array
+                          description: List of relation labels of the external/foreign node referred to from this edge
+                          items:
+                            type: string
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+    {% endif %}
+
+  /{{ class_name }}/{_key}/{{ field_name | snakecase }}:
+    parameters:
+      - $ref: '#/components/parameters/_key'
+    {% if 'read' in operations %}
+    get:
+      summary: List {{ class_name }} {{ field_name }} relations
+      description: >
+        List object(s) for the `{{ field_name }}` relation on the `{{ class_name }}` object identified by `_key`.
+
+        The `_edge` object will list attributes on the relation itself.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/search'
+        - $ref: '#/components/parameters/field'
+        - $ref: '#/components/parameters/filter'
+        - $ref: '#/components/parameters/edge_filter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  skip:
+                    type: integer
+                    minimum: 0
+                  limit:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 100
+                  results_total:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 1
+                  results:
+                    type: array
+                    items:
+                      oneOf:
+                        {% for target in targets %}
+                        - allOf:
+                          - type: object
+                            properties:
+                              _edge:
+                                type: object
+                                description: Edge attributes for relation
+                                {% set ns = namespace(edge_attrs=false) %}
+                                {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                                {% if edge_field_name not in reserved_fields and not edge_field_spec.writeOnly %}
+                                {% set ns.edge_attrs = true %}
+                                {% endif %}
+                                {% endfor %}
+                                {% if ns.edge_attrs %}
+                                properties:
+                                  {% set ns = namespace(has_props=false) %}
+                                  {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                                  {% if edge_field_name not in reserved_fields and not edge_field_spec.writeOnly %}
+                                  {% set ns.has_props=true %}
+                                  {{ edge_field_name }}:
+                                    {{ edge_field_spec | yaml | indent(36) }}
+                                  {% endif %}
+                                  {% endfor %}
+                                  {% if not ns.has_props %}
+                                    {}
+                                  {% endif %}
+                                {% endif %}
+                          - $ref: '#/components/schemas/{{ target | snakecase }}_relation_output'
+                        {% endfor %}
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    {% endif %}
+    {% if 'create' in operations %}
+    post:
+      summary: Create {{ class_name }} {{ field_name }} relation
+      description: >
+        Create a new `{{ field_name }}` relation on the `{{ class_name }}` object identified by `_key`,
+        optionally first creating a new, related object.
+
+        When creating a new object, the `_edge` object is used to define the edge itself,
+        otherwise edge properties are given alongside relation properties (`class`, `key`, etc.)
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  title: {{ field_name }} relation
+                  properties:
+                    {% if direction == 'outbound' %}
+                    to_class:
+                      type: string
+                      description: Domain class for the related object (snake_cased)
+                    to_key:
+                      type: string
+                      description: Identifier key for the related object
+                    {% endif %}
+                    {% if direction == 'inbound' %}
+                    from_class:
+                      type: string
+                      description: Domain class for the related object (snake_cased)
+                    from_key:
+                      type: string
+                      description: Identifier key for the related object
+                    {% endif %}
+                    {% if direction == 'any' %}
+                    other_class:
+                      type: string
+                      description: Domain class for the related object (snake_cased)
+                    other_key:
+                      type: string
+                      description: Identifier key for the related object
+                    direction:
+                      type: string
+                      enum: [inbound, outbound]
+                    {% endif %}
+                    {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                    {% if edge_field_name not in reserved_fields and not edge_field_spec.readOnly %}
+                    {{ edge_field_name }}:
+                      {{ edge_field_spec | yaml | indent(22) }}
+                    {% endif %}
+                    {% endfor %}
+                  required:
+                    {% if direction == 'outbound' %}
+                    - to_class
+                    - to_key
+                    {% endif %}
+                    {% if direction == 'inbound' %}
+                    - from_class
+                    - from_key
+                    {% endif %}
+                    {% if direction == 'any' %}
+                    - other_class
+                    - other_key
+                    - direction
+                    {% endif %}
+                    {% for required in db_schema.edge_collections.get(relation_spec.1, {}).get('required', []) %}
+                    {% if required not in reserved_fields %}
+                    - {{ required }}
+                    {% endif %}
+                    {% endfor %}
+                {% for target in targets %}
+                - allOf:
+                  - type: object
+                    properties:
+                      _edge:
+                        type: object
+                        description: Edge attributes for relation
+                        {% set ns = namespace(edge_attrs=false) %}
+                        {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                        {% if edge_field_name not in reserved_fields and not edge_field_spec.readOnly %}
+                        {% set ns.edge_attrs = true %}
+                        {% endif %}
+                        {% endfor %}
+                        {% if ns.edge_attrs %}
+                        properties:
+                          {% set ns = namespace(has_props=false) %}
+                          {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                          {% if edge_field_name not in reserved_fields and not edge_field_spec.readOnly %}
+                          {% set ns.has_props=true %}
+                          {{ edge_field_name }}:
+                            {{ edge_field_spec | yaml | indent(28) }}
+                          {% endif %}
+                          {% endfor %}
+                          {% if not ns.has_props %}
+                            {}
+                          {% endif %}
+                        {% endif %}
+                        {% set ns = namespace(required_added=false) %}
+                        {% for required in db_schema.edge_collections.get(relation_spec.1, {}).get('required', []) %}
+                        {% if required not in reserved_fields %}
+                        {% if not ns.required_added %}
+                        required:
+                        {% set ns.required_added = true %}
+                        {% endif %}
+                          - {{ required }}
+                        {% endif %}
+                        {% endfor %}
+                  - $ref: '#/components/schemas/{{ target | snakecase }}_relation'
+                {% endfor %}
+      responses:
+        '201':
+          description: Relation created
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    title: {{ field_name }} relation
+                    description: Edge attributes for relation
+                    properties:
+                      {% set ns = namespace(has_props=false) %}
+                      {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                      {% if edge_field_name not in reserved_fields and not edge_field_spec.writeOnly %}
+                      {% set ns.has_props=true %}
+                      {{ edge_field_name }}:
+                        {{ edge_field_spec | yaml | indent(24) }}
+                      {% endif %}
+                      {% endfor %}
+                      {% if not ns.has_props %}
+                        {}
+                      {% endif %}
+                  {% for target in targets %}
+                  - allOf:
+                    - type: object
+                      properties:
+                        _edge:
+                          type: object
+                          description: Edge attributes for relation
+                          {% set ns = namespace(edge_attrs=false) %}
+                          {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                          {% if edge_field_name not in reserved_fields and not edge_field_spec.writeOnly %}
+                          {% set ns.edge_attrs = true %}
+                          {% endif %}
+                          {% endfor %}
+                          {% if ns.edge_attrs %}
+                          properties:
+                            {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                            {% if edge_field_name not in reserved_fields and not edge_field_spec.writeOnly %}
+                            {{ edge_field_name }}:
+                              {{ edge_field_spec | yaml | indent(30) }}
+                            {% endif %}
+                            {% endfor %}
+                          {% endif %}
+                    - $ref: '#/components/schemas/{{ target | snakecase }}_relation_output'
+                  {% endfor %}
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+
+    {% endif %}
+    {% if 'update' in operations %}
+    patch:
+      summary: Update {{ class_name }} {{ field_name }} relation
+      description: >
+        Update a `{{ field_name }}` relation on the `{{ class_name }}` object identified by `_key`.
+
+        If multiple such relations exist, all will be updated.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+        - $ref: '#/components/parameters/merge'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              title: {{ field_name }} relation
+              properties:
+                {% if direction == 'outbound' %}
+                to_class:
+                  type: string
+                  description: Domain class for the related object (snake_cased)
+                to_key:
+                  type: string
+                  description: Identifier key for the related object
+                {% endif %}
+                {% if direction == 'inbound' %}
+                from_class:
+                  type: string
+                  description: Domain class for the related object (snake_cased)
+                from_key:
+                  type: string
+                  description: Identifier key for the related object
+                {% endif %}
+                {% if direction == 'any' %}
+                other_class:
+                  type: string
+                  description: Domain class for the related object (snake_cased)
+                other_key:
+                  type: string
+                  description: Identifier key for the related object
+                direction:
+                  type: string
+                  enum: [inbound, outbound]
+                {% endif %}
+                {% for edge_field_name, edge_field_spec in db_schema.edge_collections.get(relation_spec.1, {}).get('properties', {}).items() %}
+                {% if edge_field_name not in reserved_fields and not edge_field_spec.readOnly %}
+                {{ edge_field_name }}:
+                  {{ edge_field_spec | yaml | indent(18) }}
+                {% endif %}
+                {% endfor %}
+              required:
+                {% if direction == 'outbound' %}
+                - to_class
+                - to_key
+                {% endif %}
+                {% if direction == 'inbound' %}
+                - from_class
+                - from_key
+                {% endif %}
+                {% if direction == 'any' %}
+                - other_class
+                - other_key
+                - direction
+                {% endif %}
+      responses:
+        '204':
+          description: Relation updated
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    {% endif %}
+    {% if 'delete' in operations %}
+    delete:
+      summary: Delete {{ class_name }} {{ field_name }} relation
+      description: >
+        Delete a `{{ field_name }}` relation on the `{{ class_name }}` object identified by `_key`.
+
+        If multiple such relations exist, all will be deleted.
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+        {% if direction == 'outbound' %}
+        - name: to_class
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Domain class for the related object (snake_cased)
+        - name: to_key
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Identifier key for the related object
+        {% endif %}
+        {% if direction == 'inbound' %}
+        - name: from_class
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Domain class for the related object (snake_cased)
+        - name: from_key
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Identifier key for the related object
+        {% endif %}
+        {% if direction == 'any' %}
+        - name: other_class
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Domain class for the related object (snake_cased)
+        - name: other_key
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Identifier key for the related object
+        - name: direction
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [inbound, outbound]
+        {% endif %}
+      responses:
+        '204':
+          description: Relation deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '405':
+          description: Method not allowed
+
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+  {% endif %}
+
+  {% if include_changes_api and 'audit' in class_spec.triggers %}
+  /{{ class_name }}/{_key}/_changes:
+    parameters:
+      - $ref: '#/components/parameters/_key'
+    get:
+      summary: List {{ class_name }} changes from audit log
+      description: >
+        Lists the changes associated with the given object.
+      tags: [{{ class_name }}]
+      parameters:
+        - name: sort
+          description: Attribute to sort by (ascending), optionally prefix by '-' (descending)
+          in: query
+          schema:
+            type: string
+            enum:
+              - created
+              - -created
+            default: -created
+          examples:
+            created_ascending:
+              value: created
+              summary: Sort by the field `created`, ascending
+            created_descending:
+              value: -created
+              summary: Sort by the field `created`, descending
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/limit'
+        - name: edges
+          description: >
+            Include edge document audits, where object is source or target
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  skip:
+                    type: integer
+                    minimum: 0
+                  limit:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 100
+                  results_total:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 1
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/audit_log'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '405':
+          description: Read not permitted
+  {% endif %}
+
+  {% for listener in class_spec.listeners %}
+  {% if listener.access %}
+  {% if listener.access.pre %}
+  {{ listener.access.pre }}:
+    post:
+      servers:
+        - url: /system/api/service/{{ listener.name }}
+      summary: Pre access obj {{ class_name }} RPC
+      description: >
+        RPC listener called before returning {{ class_name }} objects
+      tags: [{{ class_name }}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    properties:
+                      _id:
+                        type: string
+                      _key:
+                        type: string
+                      _rev:
+                        type: string
+                  - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - type: object
+                      properties:
+                        _id:
+                          type: string
+                        _key:
+                          type: string
+                        _rev:
+                          type: string
+                        {% if listener.access.diff %}
+                        {% for prop_name, prop_spec in listener.access.diff.items() %}
+                        {{ prop_name }}:
+                          {{ prop_spec | yaml | indent(24) }}
+                        {% endfor %}
+                        {% endif %}
+                    - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}'
+  {% endif %}
+  {% endif %}
+  {% if listener.create %}
+  {% if listener.create.pre %}
+  {{ listener.create.pre }}:
+    post:
+      servers:
+        - url: /system/api/service/{{ listener.name }}
+      summary: Pre create obj {{ class_name }} RPC
+      description: >
+        RPC listener called before creating {{ class_name }} objects
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  {% if listener.create.diff %}
+                  - type: object
+                    properties:
+                      {% for prop_name, prop_spec in listener.create.diff.items() %}
+                      {{ prop_name }}:
+                        {{ prop_spec | yaml | indent(24) }}
+                      {% endfor %}
+                  {% endif %}
+                  - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}'
+  {% endif %}
+  {% if listener.create.post %}
+  {{ listener.create.post }}:
+    post:
+      servers:
+        - url: /system/api/service/{{ listener.name }}
+      summary: Post create {{ class_name }} RPC
+      description: >
+        RPC listener called after creating {{ class_name }} objects
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pre:
+                  type: object
+                post:
+                  allOf:
+                    - type: object
+                      properties:
+                        _id:
+                          type: string
+                        _key:
+                          type: string
+                        _rev:
+                          type: string
+                        {% if listener.create.diff %}
+                        {% for prop_name, prop_spec in listener.create.diff.items() %}
+                        {{ prop_name }}:
+                          {{ prop_spec | yaml | indent(26) }}
+                        {% endfor %}
+                        {% endif %}
+                    - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}'
+      responses:
+        '204':
+          description: Empty
+  {% endif %}
+  {% endif %}
+  {% if listener.update %}
+  {% if listener.get('update', {}).pre %}
+  {{ listener.get('update', {}).pre }}:
+    post:
+      servers:
+        - url: /system/api/service/{{ listener.name }}
+      summary: Pre update obj {{ class_name }} RPC
+      description: >
+        RPC listener called before updating {{ class_name }} objects
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}_partial'
+                - type: object
+                  minProperties: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}_partial'
+                  - type: object
+                    minProperties: 1
+  {% endif %}
+  {% if listener.get('update', {}).post %}
+  {{ listener.get('update', {}).post }}:
+    post:
+      servers:
+        - url: /system/api/service/{{ listener.name }}
+      summary: Post update {{ class_name }} RPC
+      description: >
+        RPC listener called after updating {{ class_name }} objects
+      tags: [{{ class_name }}]
+      parameters:
+        - $ref: '#/components/parameters/x-arango-trx-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pre:
+                  allOf:
+                    - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}_partial'
+                    - type: object
+                      minProperties: 1
+                post:
+                  allOf:
+                    - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}_partial'
+                    - type: object
+                      minProperties: 1
+      responses:
+        '204':
+          description: Empty
+  {% endif %}
+  {% endif %}
+  {% if listener.delete %}
+  {% if listener.delete.post %}
+  {{ listener.delete.post }}:
+    post:
+      servers:
+        - url: /system/api/service/{{ listener.name }}
+      summary: Post delete {{ class_name }} RPC
+      description: >
+        RPC listener called after deleting {{ class_name }} objects
+      tags: [{{ class_name }}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pre:
+                  allOf:
+                    - type: object
+                      properties:
+                        _id:
+                          type: string
+                        _key:
+                          type: string
+                        _rev:
+                          type: string
+                    - $ref: '#/components/schemas/resolver_{{ class_spec.resolver }}'
+                post:
+                  type: object
+      responses:
+        '204':
+          description: Empty
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+
+  {% endif %}
+  {% endfor %}

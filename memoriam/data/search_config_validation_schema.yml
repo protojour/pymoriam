@@ -1,0 +1,60 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+description: Validation schema for Memoriam search configs
+type: object
+additionalProperties: true
+properties:
+  view_name:
+    description: Name of the ArangoDB search view
+    type: string
+    pattern: ^[A-Za-z][A-Za-z0-9_-]+$
+  view_props:
+    description: Map of view properties, should only contain `links`
+    type: object
+    properties:
+      links:
+        description: >
+          Map of ArangoDB collections to search index configs,
+          collections should correspond to `index_fields`
+        type: object
+        patternProperties:
+          ^[A-Za-z][A-Za-z0-9_-]+$:
+            type: object
+            properties:
+              fields:
+                description: Map of fields for the search view, should only contain `_index`
+                type: object
+                properties:
+                  _index:
+                    description: Map of _index field properties
+                    type: object
+                    properties:
+                      analyzers:
+                        description: List of ArangoDB analyzers for the _index field
+                        type: array
+                        items:
+                          description: Name of an ArangoDB analyzer
+                          type: string
+                    required:
+                      - analyzers
+                required:
+                  - _index
+            required:
+              - fields
+    required:
+      - links
+  index_fields:
+    description: >
+      Map of ArangoDB collections to list of fields to be included in _index,
+      collections should correspond to `view_props.links`
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9_-]+$:
+        description: List of field names to be included in _index
+        type: array
+        items:
+          description: Name of a field within this collection to be included in _index
+          type: string
+required:
+  - view_name
+  - view_props
+  - index_fields

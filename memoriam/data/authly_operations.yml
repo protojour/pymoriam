@@ -1,0 +1,178 @@
+# root user
+# owns the main service and should generally not be used
+- set user:
+    root:
+      firstName: ""
+      lastName: ""
+      password: secret
+      email: root@example.com
+
+# main service
+# should be named accordingly, change all occurences of name below
+- set service:
+    memoriam:
+      serviceSecret: secret
+      name: Memoriam
+      host: memoriam.example.com
+      domain: example.com
+      ownerUsername: root
+
+    onto:
+      serviceSecret: secret
+      name: Onto
+      host: memoriam.example.com
+      domain: example.com
+      ownerServiceName: memoriam
+
+# common users
+# repeat for each common user, or use LDAP import
+- set user:
+    user:
+      firstName: ""
+      lastName: ""
+      password: secret
+      email: user@example.com
+
+# services
+# repeat for each service that interacts with main service
+- set service:
+    example_service:
+      serviceSecret: secret
+      name: Example Service
+      host: example-service.example.com
+      domain: example.com
+      ownerServiceName: memoriam
+
+# clients
+# repeat for each client that _users_ interact with main service through
+- set service:
+    example_client:
+      serviceSecret: secret
+      name: Example Client
+      host: example-client.example.com
+      domain: example.com
+      ownerServiceName: memoriam
+
+# contracts
+# set all relevant services to have a contract with main service
+- set contract:
+    memoriam:
+      serviceNames:
+        - onto
+        - example_client
+        - example_service
+
+# groups
+# repeat for each group of entities, or use LDAP import
+- set group:
+    users:
+      usernames:
+        - root
+        - user
+
+# roles
+# repeat at least for each client, add users or groups
+- set role:
+    memoriam:
+      onto_admin:
+        usernames:
+          - root
+
+      onto_user:
+        groupNames:
+          - users
+
+      example_client_user:
+        groupNames:
+          - users
+
+# system api
+# change or add policies, but don't change resources or action names
+- set resource:
+    memoriam:
+      domain:
+        create:
+          Allow for Onto admins: >
+            "onto_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for all Onto users: >
+            "onto_admin" in Profile.ServiceRoles ||
+            "onto_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        update:
+          Allow for Onto admins: >
+            "onto_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        delete:
+          Allow for Onto admins: >
+            "onto_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+
+      service:
+        register:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        status:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        unregister:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        proxy:
+          Allow for everyone: >
+            true
+
+      audit:
+        create:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for services: >
+            Profile.EntityType == "Service"
+
+      storage:
+        read_buckets:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        create_bucket:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read_bucket:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        create_object:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read_object:
+          Allow for services: >
+            Profile.EntityType == "Service"
+
+# domain apis
+# set up a resource for each exposed domain_class
+# add policies as you see fit, but don't change action names
+- set resource:
+    memoriam:
+      example_resource:
+        create:
+          Allow for all Example Client users: >
+            "example_client_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for all Example Client users: >
+            "example_client_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        update:
+          Allow for all Example Client users: >
+            "example_client_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        delete:
+          Deny for everyone: >
+            false

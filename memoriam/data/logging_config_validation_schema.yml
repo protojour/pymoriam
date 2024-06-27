@@ -1,0 +1,114 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+description: Validation schema for Memoriam logging configs
+type: object
+additionalProperties: true
+properties:
+  version:
+    description: Python logging config version
+    type: integer
+    enum: [1]
+  formatters:
+    description: Map of formatter names to formatter configs
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9-_\.]+$:
+        description: >
+          Configuration for a logging formatter,
+          see https://docs.python.org/3/library/logging.config.html
+        type: object
+        properties:
+          format:
+            description: Formatter string for a full log line
+            type: string
+          datefmt:
+            description: Formatter string for datetimes
+            type: string
+          style:
+            description: String formatting style
+            type: string
+            enum: ['%', '{', '$']
+            default: '%'
+          validate:
+            description: Raise error if format and style are mismatched
+            type: boolean
+            default: true
+  filters:
+    description: Map of filter names to filter configs
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9-_\.]+$:
+        description: >
+          Configuration for a filter,
+          see https://docs.python.org/3/library/logging.config.html
+        type: object
+  handlers:
+    description: Map of handler names to handler configs
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9-_\.]+$:
+        description: >
+          Configuration for a logging handler,
+          see https://docs.python.org/3/library/logging.config.html.
+          Additional properties are passed to the handler's constructor
+        type: object
+        properties:
+          class:
+            description: Fully qualified name of a handler class
+            type: string
+          level:
+            description: Level of the handler
+            type: string
+          formatter:
+            description: Name of the formatter for this handler
+            type: string
+          filters:
+            type: array
+            items:
+              description: Name of a filter
+              type: string
+        additionalProperties: true
+        required:
+          - class
+  root:
+    description: Configuration of the root logger
+    type: object
+    properties: &root_logger_props
+      handlers:
+        description: List of logging handlers for this logger
+        type: array
+        items:
+          description: Name of a logging handler
+          type: string
+      level:
+        description: Name of the logging level
+        type: string
+        enum: [CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET]
+        default: NOTSET
+  loggers:
+    description: Map of logger names to logger configs
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9-_\.]+$:
+        description: >
+          Configuration for a logger,
+          see https://docs.python.org/3/library/logging.config.html
+        type: object
+        properties:
+          <<: *root_logger_props
+          propagate:
+            description: Whether to propagate messages for this logger
+            type: boolean
+            default: true
+  incremental:
+    description: Whether the configuration is to be interpreted as incremental to the existing configuration
+    type: boolean
+    default: false
+  disable_existing_loggers:
+    description: Whether any existing non-root loggers are to be disabled
+    type: boolean
+    default: true
+required:
+  - version
+  - formatters
+  - handlers
+  - loggers

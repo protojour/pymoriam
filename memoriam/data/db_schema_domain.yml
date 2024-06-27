@@ -1,0 +1,80 @@
+all: &all
+  _id:
+    type: string
+    readOnly: true
+  _key:
+    type: string
+    readOnly: true
+  _rev:
+    type: string
+    readOnly: true
+
+edges: &edges
+  _from:
+    type: string
+  _to:
+    type: string
+
+dates: &dates
+  created:
+    description: When the domain was first created
+    type: string
+    format: date-time
+    readOnly: true
+  updated:
+    description: When the domain was last updated
+    type: string
+    format: date-time
+    readOnly: true
+
+version: &version
+  version:
+    description: An indicator of the domain's version or revision
+    type: string
+
+collections:
+
+  domain:
+    type: object
+    description: A collection of concepts, entities and data related to a specific field
+    properties:
+      <<: [*all, *dates, *version]
+      label:
+        description: A unique name generally used to refer to the Domain
+        type: string
+      description:
+        description: An informal description of the Domain
+        type: string
+      graphql:
+        description: Generate GraphQL schema for this domain
+        type: boolean
+        default: true
+      active:
+        description: Set the Domain and its generated APIs as active and in use
+        type: boolean
+        default: false
+      schema:
+        description: A YAML-based schema that describes the Domain and its attributes in detail
+        type: string
+        format: yaml
+        examples:
+          - |
+            example_class:
+              description: Example class
+              resolver: example_collection
+              constants:
+                constant_field: value
+              attributes:
+                example_field: data
+              relations:
+                example_relation: [example_class, example_relation, outbound]
+              triggers:
+                - set_created
+                - set_updated
+
+    required:
+      - label
+      - description
+      - schema
+
+edge_collections: {}

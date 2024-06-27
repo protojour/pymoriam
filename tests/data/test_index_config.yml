@@ -1,0 +1,15 @@
+collections:
+
+  audit_log:
+    created:
+      type: persistent
+      # unique: false
+      # sparse: false
+      # deduplicate: true
+      # in_background: false
+
+edge_collections:
+
+  audit_of:
+    created:
+      type: persistent

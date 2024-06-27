@@ -1,0 +1,50 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+description: Validation schema for Memoriam index configs
+type: object
+additionalProperties: true
+properties:
+  collections:
+    description: Map of collection names to collection attributes
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9_-]+$:
+        description: Map of collection attributes to index configs
+        type: object
+        patternProperties:
+          ^[A-Za-z][A-Za-z0-9_-]+$:
+            description: Index config for the given collection attribute
+            type: object
+            properties: &index_config_props
+              type:
+                description: Type of ArangoDB index
+                type: string
+                enum: [persistent, inverted, ttl, zkd, geo, fulltext]
+              unique:
+                type: boolean
+                default: false
+              sparse:
+                type: boolean
+                default: false
+              deduplicate:
+                type: boolean
+                default: true
+              inBackground:
+                type: boolean
+                default: true
+            required:
+              - type
+  edge_collections:
+    description: Map of edge collection names to edge collection attributes
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9_-]+$:
+        description: Map of edge collection attributes to index configs
+        type: object
+        patternProperties:
+          ^[A-Za-z][A-Za-z0-9_-]+$:
+            description: Index config for the given edge collection attribute
+            type: object
+            properties:
+              <<: *index_config_props
+            required:
+              - type

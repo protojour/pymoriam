@@ -1,0 +1,1125 @@
+openapi: 3.1.0
+
+info:
+  title: Memoriam System API
+  description: OpenAPI spec for core Memoriam systems
+  version: '1.0'
+  x-logo:
+    url: /docs/_static/memoriam.png
+    altText: Memoriam
+
+servers:
+  - url: /system/api
+
+tags:
+  - name: Authly
+    description: Authly authentication endpoints
+  - name: Domain
+    description: Domain endpoints
+  - name: Search
+    description: Cross domain search
+  - name: Service
+    description: Service endpoints
+  - name: Storage
+    description: Object storage endpoints
+
+components:
+
+  securitySchemes:
+    Authorization header:
+      type: http
+      scheme: bearer
+    Session cookie:
+      type: apiKey
+      in: cookie
+      name: session-cookie
+
+  parameters:
+    _key:
+      name: _key
+      in: path
+      required: true
+      schema:
+        type: string
+        description: Identifier key for an object
+    service_name:
+      name: service_name
+      description: Service name
+      in: path
+      required: true
+      schema:
+        type: string
+    bucket_name:
+      name: bucket_name
+      description: Bucket name
+      in: path
+      required: true
+      schema: &bucket_name_schema
+        type: string
+        minLength: 3
+        maxLength: 63
+        pattern: ^[a-z0-9][a-z0-9-.]+[a-z0-9]$
+    object_name:
+      name: object_name
+      description: Object name
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        pattern: ^[A-Za-z0-9/!-_.*'()]+$
+    skip:
+      name: skip
+      description: Number of items to skip in results
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+    limit:
+      name: limit
+      description: Number of items to limit results to
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: {{ default_limit }}
+
+  schemas: {}
+
+paths:
+
+  /auth/authenticate:
+    post:
+      servers:
+        - url: /authly/api
+      summary: Authenticate against Authly
+      tags: [Authly]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  title: Authly user credentials
+                  properties:
+                    username:
+                      type: string
+                    password:
+                      type: string
+                      format: password
+                  required:
+                    - username
+                    - password
+                - type: object
+                  title: Authly service credentials
+                  properties:
+                    serviceName:
+                      type: string
+                    serviceSecret:
+                      type: string
+                      format: password
+                  required:
+                    - serviceName
+                    - serviceSecret
+                - type: object
+                  title: LDAP user credentials
+                  description: >
+                    LDAP credentials for a given LDAP Authority and Source.
+                    All credentials listed for the source (see /auth/authorities) are required, but may vary according to LDAP configuration.
+                    Common credentials are `uid` and `password`.
+                  properties:
+                    authorityName:
+                      type: string
+                      description: Authority name (`LDAP`)
+                      enum: [LDAP]
+                    sourceName:
+                      type: string
+                      description: LDAP source name
+                  additionalProperties: true
+                  required:
+                    - authorityName
+                    - sourceName
+                  examples:
+                    - authorityName: LDAP
+                      sourceName: ldap.forumsys.com
+                      uid: riemann
+                      password: password
+                - type: object
+                  title: OAuth2 user credentials
+                  description: >
+                    Credentials for a given OAuth2 Authority and Source.
+                    All credentials listed for the source (see /auth/authorities) are required, but may vary according to OAuth2 configuration.
+                  properties:
+                    authorityName:
+                      type: string
+                      description: Authority name (`OAuth2`)
+                      enum: [OAuth2]
+                    sourceName:
+                      type: string
+                      description: OAuth2 source name
+                  additionalProperties: true
+                  required:
+                    - authorityName
+                    - sourceName
+                  examples:
+                    - authorityName: OAuth2
+                      sourceName: keycloak
+                      username: username
+                      password: password
+      responses:
+        '200':
+          description: Authenticated
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Sets a secure `session-cookie` for use with subsequent requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Authorization token to be used with subsequent requests
+                  entityID:
+                    type: integer
+                    description: Entity ID for session
+                  authenticated:
+                    type: boolean
+                    description: Whether session is authenticated
+                  authenticateURL:
+                    type: string
+                    description: Authentication redirect URL, used with OAuth2
+                  expires:
+                    type: string
+                    format: date-time
+                    description: Session expiry datetime
+        '401':
+          description: Unauthorized
+
+  /auth/authorities:
+    get:
+      servers:
+        - url: /authly/api
+      summary: Get LDAP authorities
+      tags: [Authly]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: Authority description
+                  properties:
+                    authlyAuthorityDisabled:
+                      type: boolean
+                      description: If true, the Authly authority is disabled altogether
+                    authlyUserLoginDisabled:
+                      type: boolean
+                      description: If true, the Authly authority is disabled for user logins
+                    authoritySources:
+                      additionalProperties:
+                        type: object
+                        x-additionalPropertiesName: authorityName
+                        additionalProperties:
+                          type: object
+                          x-additionalPropertiesName: sourceName
+                          properties:
+                            authParams:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  alias:
+                                    type: string
+                                  defaultValue:
+                                    type: string
+                                  description:
+                                    type: string
+                                  required:
+                                    type: boolean
+
+  /auth/session:
+    get:
+      servers:
+        - url: /authly/api
+      summary: Check existing sesssion
+      tags: [Authly]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    title: User session data
+                    properties:
+                      expiration:
+                        type: string
+                        format: date-time
+                      profile:
+                        type: object
+                        properties:
+                          entityID:
+                            type: integer
+                            minimum: 1
+                            description: Authly Entity ID
+                          entityType:
+                            type: string
+                            description: Authly Entity Type, either User or Service
+                            enum: [User]
+                          firstName:
+                            type: string
+                          lastName:
+                            type: string
+                          email:
+                            type: string
+                            format: email
+                          username:
+                            type: string
+                  - type: object
+                    title: Service session data
+                    properties:
+                      expiration:
+                        type: string
+                        format: date-time
+                      profile:
+                        type: object
+                        properties:
+                          entityID:
+                            type: integer
+                            minimum: 1
+                            description: Authly Entity ID
+                          entityType:
+                            type: string
+                            description: Authly Entity Type, either User or Service
+                            enum: [Service]
+                          name:
+                            type: string
+                          email:
+                            type: string
+                            format: email
+                          serviceName:
+                            type: string
+                          host:
+                            type: string
+                          domain:
+                            type: string
+                          ownerEID:
+                            type: integer
+                            minimum: 1
+        '401':
+          description: Unauthorized
+
+  /service/service:
+    get:
+      servers:
+        - url: /authly/api
+      summary: Get info on the main Memoriam service
+      tags: [Authly]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+
+  /service/service/{service_name}/logo:
+    get:
+      servers:
+        - url: /authly/api
+      parameters:
+        - $ref: '#/components/parameters/service_name'
+      summary: Get logo image for a Service
+      tags: [Authly]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '500':
+          description: Bad image data
+
+    post:
+      servers:
+        - url: /authly/api
+      parameters:
+        - $ref: '#/components/parameters/service_name'
+      summary: Post logo image for a Service
+      tags: [Authly]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      requestBody:
+        required: true
+        content:
+          'image/png':
+            schema:
+              type: string
+              format: binary
+          'image/gif':
+            schema:
+              type: string
+              format: binary
+          'image/jpeg':
+            schema:
+              type: string
+              format: binary
+          'image/webp':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '400':
+          description: Bad image data
+
+  /search:
+    get:
+      operationId: memoriam.domain.search.cross_domain_search
+      summary: Search all indexed domain objects
+      description: >
+        Fulltext search for all indexed domain objects
+      tags: [Search]
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/limit'
+        - name: search
+          description: Query for fulltext search
+          in: query
+          required: true
+          schema:
+            type: string
+          examples:
+            - "needle"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  skip:
+                    type: integer
+                    minimum: 0
+                  limit:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 100
+                  results_total:
+                    type: integer
+                    minimum: 0
+                    examples:
+                      - 1
+                  results:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+
+  /domain:
+    get:
+      operationId: memoriam.domain.domain.list_domains
+      summary: List domains
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/domain'
+        '401':
+          description: Unauthorized
+
+    post:
+      operationId: memoriam.domain.domain.post_domain
+      summary: Create a new domain
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/domain'
+      responses:
+        '201':
+          description: New domain created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict
+
+  /domain/validate:
+    post:
+      operationId: memoriam.domain.domain.validate_domain
+      summary: Validate a domain
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schema:
+                  type: string
+              required:
+                - schema
+      responses:
+        '200':
+          description: Domain is valid
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict
+
+  /domain/{_key}:
+    parameters:
+      - $ref: '#/components/parameters/_key'
+    get:
+      operationId: memoriam.domain.domain.get_domain
+      summary: Get a domain
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/domain'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    patch:
+      operationId: memoriam.domain.domain.patch_domain
+      summary: Change a domain
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/domain'
+      responses:
+        '200':
+          description: Domain updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/domain'
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    delete:
+      operationId: memoriam.domain.domain.delete_domain
+      summary: Delete a domain
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '204':
+          description: Domain deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+  /db_schema:
+    get:
+      operationId: memoriam.domain.domain.get_db_schema
+      summary: Get reference backend database schema
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                type: string
+                description: Backend database schema, YAML JSON Schema format
+                examples:
+                  - |
+                    all: &all
+                      _id:
+                        type: string
+                        readOnly: true
+                      _key:
+                        type: string
+                        readOnly: true
+                      _rev:
+                        type: string
+                        readOnly: true
+
+                    edges: &edges
+                      _from:
+                        type: string
+                      _to:
+                        type: string
+
+                    collections:
+
+                      data:
+                        type: object
+                        properties:
+                          <<: *all
+                          data_type:
+                            type: string
+                            readOnly: true
+
+                    edge_collections:
+
+                      relation:
+                        type: object
+                        properties:
+                          <<: [*all, *edges]
+                        required:
+                          - _from
+                          - _to
+        '401':
+          description: Unauthorized
+
+  /domain-validation-schema.json:
+    get:
+      operationId: memoriam.domain.domain.get_domain_validation_schema_json
+      summary: Get reference domain validation schema schema
+      tags: [Domain]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: Domain validation schema, YAML JSON Schema format
+        '401':
+          description: Unauthorized
+
+  # /acm/domain/{domain_key}/resources:
+  #   get:
+  #     operationId: memoriam.domain.acm.list_resources
+  #     summary: List resources for a given domain
+  #     tags: [Domain]
+  #     security:
+  #       - Authorization header: []
+  #       - Session cookie: []
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 type: object
+  #                 properties:
+  #                   ResourceID:
+  #                     type: integer
+  #                     description: The ID of the resource
+  #                   ServiceEID:
+  #                     type: integer
+  #                     description: The Authly service entity ID
+  #                   Resourcename:
+  #                     type: string
+  #                     description: The name of the resource
+  #                   Env:
+  #                     type: object
+  #                   ActionDefaults:
+  #                     type: object
+  # /acm/roles:
+  #   get:
+  #     operationId: memoriam.domain.acm.get_roles
+  #     summary: Get roles
+  #     tags: [Domain]
+  #     security:
+  #       - Authorization header: []
+  #       - Session cookie: []
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 type: object
+  #                 properties: {}
+
+  /service:
+    get:
+      operationId: memoriam.domain.services.service_status
+      summary: Show information on connected services
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: >
+                  A dictionary of service names with associated info,
+                  with health checks per service
+                examples:
+                  - Example Service:
+                      api: http://example-service:6000/api
+                      health: http://example-service:6000/health
+                      info: This is an example service
+                      status:
+                        status: ready
+                      status_code: 200
+
+        '401':
+          description: Unauthorized
+
+  /service/register:
+    post:
+      operationId: memoriam.domain.services.register_service
+      summary: Register a service with the service interface
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: &service_name
+                  type: string
+                  minLength: 2
+                  maxLength: 32
+                  description: Service name (alphanumeric and underscores)
+                  examples:
+                    - example_service
+                info:
+                  type: string
+                  description: Service info, whatever the service wants to share about itself
+                  examples:
+                    - Description of example_service
+                host:
+                  type: string
+                  format: uri
+                  description: Base URL where the the service is hosted
+                  examples:
+                    - http://example_service:6000
+                api:
+                  type: string
+                  description: URL path for an API the service wants exposed, relative to host
+                  examples:
+                    - /api
+                health:
+                  type: string
+                  description: URL path for a service health check, relative to host
+                  examples:
+                    - /health
+                rpc:
+                  type: object
+                  description: Configuration for RPC endpoints
+                  examples:
+                    - example_class:
+                        access:
+                          pre: /api/pre_access_obj_example_class
+                        create:
+                          pre: /api/pre_create_obj_example_class
+                          post: /api/post_create_obj_example_class
+                          diff:
+                            added_field:
+                              type: string
+                          meta:
+                            required_metadata:
+                              type: string
+                        update:
+                          pre: /api/pre_update_obj_example_class
+                          post: /api/post_update_obj_example_class
+                          diff:
+                            --removed_field:
+                              type: string
+                          meta:
+                            required_metadata:
+                              type: string
+                        delete:
+                          post: /api/post_delete_obj_example_class
+                        relations:
+                          related_class:
+                            create:
+                              pre: /api/pre_create_rel_example_class_related_class
+                            update:
+                              pre: /api/pre_update_rel_example_class_related_class
+              required:
+                - name
+                - info
+      responses:
+        '201':
+          description: Service registered
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+
+  /service/unregister/{service_name}:
+    parameters:
+      - name: service_name
+        in: path
+        required: true
+        schema: *service_name
+    delete:
+      operationId: memoriam.domain.services.unregister_service
+      summary: Unregister a service from the service interface
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '204':
+          description: Service unregistered
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service not found
+
+  /service/{service_name}/{path:path}:
+    parameters:
+      - name: service_name
+        in: path
+        required: true
+        schema: *service_name
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+          format: path
+          pattern: ^[A-Za-z0-9-_\/]+$
+          examples:
+            - health
+    get:
+      operationId: memoriam.domain.services.service_api_proxy
+      summary: Reverse proxy for connected service APIs
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service not found or invalid path
+
+    post:
+      operationId: memoriam.domain.services.service_api_proxy
+      summary: Reverse proxy for connected service APIs
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service not found or invalid path
+
+    put:
+      operationId: memoriam.domain.services.service_api_proxy
+      summary: Reverse proxy for connected service APIs
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service not found or invalid path
+
+    patch:
+      operationId: memoriam.domain.services.service_api_proxy
+      summary: Reverse proxy for connected service APIs
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service not found or invalid path
+
+    delete:
+      operationId: memoriam.domain.services.service_api_proxy
+      summary: Reverse proxy for connected service APIs
+      tags: [Service]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service not found or invalid path
+
+  {% if include_storage_api %}
+  /storage/buckets:
+    get:
+      operationId: memoriam.storage.storage.list_buckets
+      summary: List buckets
+      tags: [Storage]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bucket_name:
+                      type: string
+                    creation_date:
+                      type: string
+                      format: date-time
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    post:
+      operationId: memoriam.storage.storage.post_bucket
+      summary: Create a new bucket
+      tags: [Storage]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bucket_name: *bucket_name_schema
+              required:
+                - bucket_name
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict (name already exists)
+
+  /storage/{bucket_name}:
+    parameters:
+      - $ref: '#/components/parameters/bucket_name'
+    get:
+      operationId: memoriam.storage.storage.get_bucket
+      summary: List contents of bucket
+      tags: [Storage]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: &storage_object_props
+                    object_name:
+                      type: string
+                    size:
+                      type: integer
+                    etag:
+                      type: string
+                    content_type:
+                      type: string
+                    last_modified:
+                      type: string
+                      format: date-time
+                    metadata:
+                      type: object
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+  /storage/{bucket_name}/{object_name}:
+    parameters:
+      - $ref: '#/components/parameters/bucket_name'
+      - $ref: '#/components/parameters/object_name'
+    get:
+      operationId: memoriam.storage.storage.get_object
+      summary: Get object
+      tags: [Storage]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      parameters:
+        - name: stat
+          description: If true, request only object stats
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            # in case of a stats request
+            application/json:
+              schema:
+                type: object
+                properties: *storage_object_props
+            # ...but when requesting the actual object
+            # may be ANY media type!
+            # TODO: find out how to document
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+    post:
+      operationId: memoriam.storage.storage.post_object
+      summary: Post object
+      tags: [Storage]
+      security:
+        - Authorization header: []
+        - Session cookie: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sha256:
+                    type: string
+                  object_name:
+                    type: string
+                  etag:
+                    type: string
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '413':
+          description: Maximum size limit for file upload reached
+  {% endif %}

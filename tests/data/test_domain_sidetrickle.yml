@@ -1,0 +1,41 @@
+version: '1.0'
+label: Sidetrickle
+description: A second test domain for testing second domains
+graphql: true
+active: true
+schema:
+
+  Search Result:
+    description: A set of user-driven search results
+    resolver: grouping
+    permissive: output
+    attributes:
+      creator: creator
+      created: created
+      updated: updated
+      name: label
+      description: data
+    relations:
+      objects: [[ANY], includes, outbound]
+      comments: [[Comment], comment_on, inbound]
+    triggers:
+      - set_creator
+      - set_created
+      - set_updated
+      - audit
+
+  Comment:
+    description: A comment on any other item
+    resolver: comment
+    attributes:
+      author: creator
+      created: created
+      updated: updated
+      content: data
+    relations:
+      comment_on: [[ANY], comment_on, outbound]
+    triggers:
+      - set_creator
+      - set_created
+      - set_updated
+      - audit

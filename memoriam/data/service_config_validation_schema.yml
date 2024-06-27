@@ -1,0 +1,129 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+description: Validation schema for Memoriam service configs
+type: object
+additionalProperties: true
+properties:
+  services:
+    description: Map of Memoriam services
+    type: object
+    patternProperties:
+      ^[\w\s]*$:
+        type: object
+        properties:
+          name:
+            description: Optional display name of the service
+            type: string
+          info:
+            description: Information about the service
+            type: string
+          host:
+            description: Host URI for the service
+            type: string
+            format: uri
+          health:
+            description: Health relative URI for the service, `host + health` is used for health checks on Gateway
+            type: string
+            format: uri-reference
+          api:
+            description: API relative URI for the service, `host + api` is made available through the Gateway
+            type: string
+            format: uri-reference
+          client:
+            description: Whether this service is a "client"
+            type: boolean
+            default: false
+          rpc:
+            description: Map of RPC endpoints provided by the service
+            type: object
+            patternProperties:
+              ^[\w\s]*$:
+                type: object
+                properties:
+                  access:
+                    description: Configuration for access operations
+                    type: object
+                    properties:
+                      pre:
+                        description: Relative URI for an RPC handler endpoint for this
+                        type: string
+                        format: uri-reference
+                      diff:
+                        description: Fields to be added or removed by the RPC handler
+                        type: object
+                      meta:
+                        description: _meta properties expected by the RPC handler
+                        type: object
+                    required:
+                      - pre
+                  create:
+                    description: Configuration for create operations
+                    type: object
+                    properties:
+                      pre:
+                        description: Relative URI for an RPC handler endpoint for this
+                        type: string
+                        format: uri-reference
+                      post:
+                        description: Relative URI for an RPC handler endpoint for this
+                        type: string
+                        format: uri-reference
+                      diff:
+                        description: Fields to be added or removed by the RPC handler
+                        type: object
+                      meta:
+                        description: _meta properties expected by the RPC handlers
+                        type: object
+                  update:
+                    description: Configuration for update operations
+                    type: object
+                    properties:
+                      pre:
+                        description: Relative URI for an RPC handler endpoint for this
+                        type: string
+                        format: uri-reference
+                      post:
+                        description: Relative URI for an RPC handler endpoint for this
+                        type: string
+                        format: uri-reference
+                      diff:
+                        description: Fields to be added or removed by the RPC handler
+                        type: object
+                      meta:
+                        description: _meta properties expected by the RPC handlers
+                        type: object
+                  delete:
+                    description: Configuration for delete operations
+                    type: object
+                    properties:
+                      post:
+                        description: Relative URI for an RPC handler endpoint for this
+                        type: string
+                        format: uri-reference
+                      meta:
+                        description: _meta properties expected by the RPC handler
+                        type: object
+                    required:
+                      - post
+                  relations:
+                    description: Map of relation names to relation configs operations
+                    type: object
+                    patternProperties:
+                      ^[\w\s]*$:
+                        type: object
+                        properties:
+                          pre:
+                            description: Relative URI for an RPC handler endpoint for this
+                            type: string
+                            format: uri-reference
+                          post:
+                            description: Relative URI for an RPC handler endpoint for this
+                            type: string
+                            format: uri-reference
+                          diff:
+                            description: Fields to be added or removed by the RPC handler
+                            type: object
+                          meta:
+                            description: _meta properties expected by the RPC handlers
+                            type: object
+required:
+  - services

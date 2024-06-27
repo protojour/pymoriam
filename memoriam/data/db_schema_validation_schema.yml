@@ -1,0 +1,19 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+description: Validation schema for Memoriam database schemas
+type: object
+additionalProperties: true
+properties:
+  collections:
+    description: Map of collection names to collection properties
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9_-]+$:
+        description: JSON schema representation of collection properties
+        type: object
+  edge_collections:
+    description: Map of edge collection names to edge collection properties
+    type: object
+    patternProperties:
+      ^[A-Za-z][A-Za-z0-9_-]+$:
+        description: JSON schema representation of edge collection properties
+        type: object

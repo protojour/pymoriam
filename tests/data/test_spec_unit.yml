@@ -1,0 +1,63 @@
+openapi: 3.1.0
+
+info:
+  title: Memoriam test API
+  description: Memoriam test API
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+tags:
+  - name: data
+    description: Generic data
+
+components:
+
+  parameters:
+    _key:
+      name: _key
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas: {}
+
+paths:
+  /data:
+    get:
+      operationId: tests.test_unit_openapi.list_data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/data'
+    post:
+      operationId: tests.test_unit_openapi.post_data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/data'
+      responses:
+        '201':
+          description: OK
+
+  /data/{_key}:
+    parameters:
+      - $ref: '#/components/parameters/_key'
+    get:
+      operationId: tests.test_unit_openapi.get_data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/data'

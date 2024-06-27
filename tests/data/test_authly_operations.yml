@@ -1,0 +1,288 @@
+# yaml-language-server: $schema=authly_operation_schema.json
+---
+- set user:
+    # root user
+    # owns the main service and should generally not be used
+    root:
+      firstName: ""
+      lastName: ""
+      password: secret
+      email: root@protojour.com
+
+    # common users
+    # repeat for each common user, or use LDAP import
+    testuser:
+      firstName: Testola
+      lastName: Testla
+      password: secret
+      email: testuser@protojour.com
+
+    noman:
+      firstName: Noman
+      lastName: Noway
+      password: secret
+      email: noman@protojour.com
+
+- set group:
+    # groups
+    # repeat for each group of entities, or use LDAP import
+    users:
+      usernames:
+        - root
+        - testuser
+
+- set service:
+    # main service
+    # should be named accordingly, change all occurences of name below
+    memoriam:
+      serviceSecret: secret
+      name: Memoriam
+      host: memoriam.protojour.com
+      domain: protojour.com
+      ownerUsername: root
+
+    onto:
+      serviceSecret: secret
+      name: Onto
+      host: onto.protojour.com
+      domain: protojour.com
+      ownerServiceName: memoriam
+
+    # services
+    # repeat for each service that interacts with main service
+    testservice:
+      serviceSecret: secret
+      name: Test Service
+      host: testservice.protojour.com
+      domain: protojour.com
+      ownerServiceName: memoriam
+
+    # clients
+    # repeat for each client that _users_ interact with main service through
+    testclient:
+      serviceSecret: secret
+      name: Test Client
+      host: testclient.protojour.com
+      domain: protojour.com
+      ownerServiceName: memoriam
+
+- set contract:
+    # contracts
+    # add all services to have a contract with main service
+    memoriam:
+      serviceNames:
+        - onto
+        - testclient
+        - testservice
+
+- set role:
+    # roles
+    # repeat at least for each client, add users or groups
+    memoriam:
+
+      onto_admin:
+        usernames:
+          - root
+
+      onto_user:
+        groupNames:
+          - users
+
+      testclient_admin:
+        usernames:
+          - root
+
+      testclient_user:
+        groupNames:
+          - users
+
+- set resource:
+
+    # replace with main service name
+    memoriam:
+
+      # system api
+      # change or add policies, but don't change resources or actions
+      domain:
+        create:
+          Allow for onto admins: >
+            "onto_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for all onto users: >
+            "onto_admin" in Profile.ServiceRoles ||
+            "onto_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        update:
+          Allow for onto admins: >
+            "onto_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        delete:
+          Allow for onto admins: >
+            "onto_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+
+      service:
+        register:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        status:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        unregister:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        proxy:
+          Allow for everyone: >
+            true
+
+      audit:
+        create:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for services: >
+            Profile.EntityType == "Service"
+
+      # ignore for now
+      storage:
+        read_buckets:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        create_bucket:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read_bucket:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        create_object:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read_object:
+          Allow for services: >
+            Profile.EntityType == "Service"
+
+      # domain apis
+      # add domains, resources and policies as you see fit, but don't change actions
+      dataset:
+        create:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        update:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        delete:
+          Deny for everyone: >
+            false
+
+      search_result:
+        create:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        update:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        delete:
+          Deny for everyone: >
+            false
+
+      meta:
+        create:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        update:
+          Allow for services: >
+            Profile.EntityType == "Service"
+        delete:
+          Deny for everyone: >
+            false
+
+      comment:
+        create:
+          Allow for testclient admins: >
+            "testclient_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        read:
+          Allow for all testclient users: >
+            "testclient_admin" in Profile.ServiceRoles ||
+            "testclient_user" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        update:
+          Allow for testclient admins: >
+            "testclient_admin" in Profile.ServiceRoles
+          Allow for services: >
+            Profile.EntityType == "Service"
+        delete:
+          Deny for everyone: >
+            false
+
+    # ...
+
+# For testing LDAP
+# - set authority:
+#     LDAP:
+#       enabled: true
+
+# - create source:
+#     LDAP:
+#       forumsys:
+#         enabled: true
+#         hostname: ldap.forumsys.com
+#         port: "389"
+#         tlsPort: "636"
+#         tlsEnabled: false
+#         readOnlyDN: cn=read-only-admin,dc=example,dc=com
+#         readOnlyPass: password
+#         baseDN: dc=example,dc=com
+#         bindDNTemplate: uid={uid},dc=example,dc=com
+#         userSyncFilter: (&(objectClass=inetOrgPerson))
+#         authParams:
+#           - name: uid
+#             description: User ID
+#             alias: User ID
+#             required: true
+#         userTemplate:
+#           username: "{uid}"
+#           firstName: "{cn}"
+#           lastName: "{sn}"
+#           email: "{mail}"
+
+# - run sync:
+#     LDAP:
+#       sourceNames: ["forumsys"]

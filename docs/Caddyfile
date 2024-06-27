@@ -1,0 +1,7 @@
+:80 {
+    redir /pymoriam/docs /pymoriam/docs/
+    handle_path /pymoriam/docs* {
+        root * /srv
+        file_server
+    }
+}

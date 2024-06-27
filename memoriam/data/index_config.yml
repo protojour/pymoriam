@@ -1,0 +1,17 @@
+# each collection, corresponding to collections in database schema,
+# is a map of fields, each of which is a map describing the index type.
+# index parameters correspond to ArangoDB index parameters.
+# see below for examples.
+# any attribute starting with _ are automatically indexed.
+collections:
+
+  audit_log:
+    created:
+      type: persistent       # type is required
+      # unique: false        # default
+      # sparse: false        # default
+      # deduplicate: true    # default
+      # inBackground: true   # default
+
+# edge collections are configured exactly the same as collections
+edge_collections: {}

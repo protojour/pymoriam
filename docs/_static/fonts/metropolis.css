@@ -1,0 +1,24 @@
+@font-face {
+  font-family: 'Metropolis Thin';
+  src: url('Metropolis-Thin.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Metropolis Regular';
+  src: url('Metropolis-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Metropolis SemiBold';
+  src: url('Metropolis-SemiBold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Metropolis Bold';
+  src: url('Metropolis-Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Metropolis Light';
+  src: url('Metropolis-Light.woff') format('woff');
+}

@@ -1,0 +1,468 @@
+"""{{ domain.description }}"""
+type Query {
+  """Version string for the {{ domain.label }} domain"""
+  version: String
+  {% for class_name, class in domain.classes.items() %}
+  {% if 'read' in class.operations %}
+  {% if class.attributes %}
+  {{ class_name }}List(
+    """Number of items to skip in results.
+
+       - Minimum: `0`"""
+    skip: Int,
+    """Number of items to limit results to.
+
+       - Minimum: `0`
+       - Default: `{{ default_limit }}`"""
+    limit: Int,
+    """Attribute to sort by (ascending), optionally prefix by "-" (descending).
+
+       - Sort by the field "label", ascending: `label`
+       - Sort by the field "created", descending: `-created`"""
+    sort: [String],
+    """AQL-like filter statements composed of domain object field,
+       comparison operator, and comparison value.
+       These values are space-separated,
+       so comparison operators are concatenated,
+       but spaces may be used in comparison values.
+       String comparison values must use double quotes.
+       Multiple filters are allowed, and will be applied in order.
+
+       - Equality: `category == 5`
+       - Inequality: `category != 1`
+       - Less than: `category < 5`
+       - Less than or equal: `category <= 3`
+       - Greater than: `category > 3`
+       - Greater than or equal: `category >= 3`
+       - Set membership: `category IN [1, 2, 3]`
+       - Set non-membership: `category NOTIN [4, 5]`
+       - Partial string matching: `text LIKE "prefix%"`
+       - Partial string non-matching: `text NOTLIKE "%suffix"`
+       - Partial string matching (shorthand): `text =~ "prefix%"`
+       - Partial string non-matching (shorthand): `text !~ "%suffix"`
+       """
+    filter: [String],
+    """Query string for fulltext search.
+
+       - Search for indexed occurrences of the string "needle": `needle`"""
+    search: String
+  ): {{ class_name }}Results
+  {% else %}
+  {{ class_name }}List(
+    """Number of items to skip in results.
+
+       - Minimum: `0`"""
+    skip: Int,
+    """Number of items to limit results to.
+
+       - Minimum: `0`
+       - Default: `{{ default_limit }}`"""
+    limit: Int,
+    """Attribute to sort by (ascending), optionally prefix by "-" (descending).
+
+       - Sort by the field "label", ascending: `label`
+       - Sort by the field "created", descending: `-created`"""
+    sort: [String]
+  ): {{ class_name }}Results
+  {% endif %}
+  {{ class_name }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!
+  ): {{ class_name }}
+  {% endif %}
+  {% endfor %}
+}
+
+{% for class_name, class in domain.classes.items() %}
+"""Wrapper for returning {{ class_name }} results with result count"""
+type {{ class_name }}Results {
+  "Number of total results, before applying `skip` and `limit`"
+  results_total: Int!
+  "List of results"
+  results: [{{ class_name }}]!
+}
+
+"""{{ class.description }}"""
+type {{ class_name }} {
+  "Identifier key for the object"
+  _key: ID!
+  "Fields collected from the edge leading to object, if any"
+  _edge: Edge
+  """Meta field for returning all fields for an object, even undocumented ones.
+     The resulting object will not contain `_all` as an actual field."""
+  _all: AllFields
+  {% for field_name, field in class.attributes.items() %}
+  {% if field_name != '_key' %}
+  {% if not field.is_writeonly %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {% if field.is_list %}
+  {{ field_name }}: [{{ field.type }}]
+  {% else %}
+  {{ field_name }}: {{ field.type }}
+  {% endif %}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+  {% for field_name, field in class.relations.items() %}
+  {% if not field.is_writeonly %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {% if field.is_list %}
+  {{ field_name }}(
+    """Number of items to skip in results.
+
+       - Minimum: `0`"""
+    skip: Int,
+    """Number of items to limit results to.
+
+       - Minimum: `0`
+       - Default: `{{ default_limit }}`"""
+    limit: Int,
+    """Attribute to sort by (ascending), optionally prefix by `-` (descending).
+
+       - Sort by the field "label", ascending: `label`
+       - Sort by the field "created", descending: `-created`"""
+    sort: [String],
+    """AQL-like filter statements composed of domain object field,
+       comparison operator, and comparison value.
+       These values are space-separated,
+       so comparison operators are concatenated,
+       but spaces may be used in comparison values.
+       String comparison values must use double quotes.
+       Multiple filters are allowed, and will be applied in order.
+
+       - Equality: `category == 5`
+       - Inequality: `category != 1`
+       - Less than: `category < 5`
+       - Less than or equal: `category <= 3`
+       - Greater than: `category > 3`
+       - Greater than or equal: `category >= 3`
+       - Set membership: `category IN [1, 2, 3]`
+       - Set non-membership: `category NOTIN [4, 5]`
+       - Partial string matching: `text LIKE "prefix%"`
+       - Partial string non-matching: `text NOTLIKE "%suffix"`
+       - Partial string matching (shorthand): `text =~ "prefix%"`
+       - Partial string non-matching (shorthand): `text !~ "%suffix"`
+       """
+    filter: [String]
+    """AQL-like filter statements composed of edge attribute field,
+       comparison operator, and comparison value.
+       These values are space-separated,
+       so comparison operators are concatenated,
+       but spaces may be used in comparison values.
+       String comparison values must use double quotes.
+       Multiple filters are allowed, and will be applied in order.
+
+       - Equality: `category == 5`
+       - Inequality: `category != 1`
+       - Less than: `category < 5`
+       - Less than or equal: `category <= 3`
+       - Greater than: `category > 3`
+       - Greater than or equal: `category >= 3`
+       - Set membership: `category IN [1, 2, 3]`
+       - Set non-membership: `category NOTIN [4, 5]`
+       - Partial string matching: `text LIKE "prefix%"`
+       - Partial string non-matching: `text NOTLIKE "%suffix"`
+       - Partial string matching (shorthand): `text =~ "prefix%"`
+       - Partial string non-matching (shorthand): `text !~ "%suffix"`
+       """
+    edge_filter: [String]
+    """Query string for fulltext search.
+
+       - Search for indexed occurrences of the string "needle": `needle`"""
+    search: String
+  ): {{ field.type }}Results
+  {% else %}
+  {{ field_name }}: {{ field.type }}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+}
+
+{% endfor %}
+{% for type_name, type_spec in domain.types.items() %}
+"""Subtype {{ type_name }}"""
+type {{ type_name }} {
+  {% for field_name, field in type_spec.items() %}
+  {% if not field.is_writeonly %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {{ field_name }}: {{ field.type }}
+  {% endif %}
+  {% endfor %}
+}
+
+{% endfor %}
+{% for union_name, types in domain.unions.items() %}
+"""Wrapper for returning {{ union_name }} results with result count"""
+type {{ union_name }}Results {
+  "Number of total results, before applying `skip` and `limit`"
+  results_total: Int!
+  "List of results"
+  results: [{{ union_name }}]!
+}
+
+union {{ union_name }} = {{ ' | '.join(types) }}
+
+{% endfor %}
+"""Generic type for capturing edge attributes on graph traversal"""
+type Edge {
+  _key: ID!
+  {% for field_name, type in domain.edge_attributes.items() %}
+  {% if field_name != '_key' %}
+  {{ field_name }}: {{ type }}
+  {% endif %}
+  {% endfor %}
+}
+
+{% if mutations %}
+"""Domain Object Mutations"""
+type Mutation {
+  {% for class_name, class in domain.classes.items() %}
+  {% if class.attributes.values() | rejectattr('is_readonly') | list %}
+  {% if 'create' in class.operations %}
+  create{{ class_name }}(
+    "Input data for new {{ class_name }}"
+    input: {{ class_name }}Input
+  ): {{ class_name }}
+  {% endif %}
+  {% if 'update' in class.operations %}
+  update{{ class_name }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!,
+    """Merge object structures in payload with existing objects?
+       By default (`false`), objects in payload will replace existing objects."""
+    mergeObjects: Boolean,
+    "Input data for {{ class_name }} update"
+    input: {{ class_name }}Partial
+  ): {{ class_name }}
+  {% endif %}
+  {% else %}
+  {% if 'create' in class.operations %}
+  create{{ class_name }}: {{ class_name }}
+  {% endif %}
+  {% if 'update' in class.operations %}
+  update{{ class_name }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!
+  ): {{ class_name }}
+  {% endif %}
+  {% endif %}
+  {% if 'delete' in class.operations %}
+  delete{{ class_name }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!
+  ): Boolean
+  {% endif %}
+  {% for field_name, field in class.relations.items() %}
+  {% if field.edge_fields %}
+  {% if field.type[-5:] == 'Union' or field.type[-3:] == 'Any' %}
+  {% for type in domain.unions[field.type] %}
+  {% if 'create' in domain.classes[type].operations %}
+  {% if domain.classes[type].attributes.values() | rejectattr('is_readonly') | list %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!,
+    "Edge data for {{ field_name | pascalcase }} relation"
+    _edge: {{ class_name }}{{ field_name | pascalcase }}EdgePartial,
+    "Input data for new {{ type }}"
+    input: {{ type }}Input!
+  ): {{ type }}
+  {% else %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!,
+    "Edge data for {{ field_name | pascalcase }} relation"
+    _edge: {{ class_name }}{{ field_name | pascalcase }}EdgePartial
+  ): {{ type }}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+  {% else %}
+  {% if 'create' in domain.classes[field.type].operations %}
+  {% if domain.classes[field.type].attributes.values() | rejectattr('is_readonly') | list %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ field.type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!,
+    "Edge data for {{ field_name | pascalcase }} relation"
+    _edge: {{ class_name }}{{ field_name | pascalcase }}EdgePartial,
+    "Input data for new {{ field.type }}"
+    input: {{ field.type }}Input!
+  ): {{ field.type }}
+  {% else %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ field.type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!,
+    "Edge data for {{ field_name | pascalcase }} relation"
+    _edge: {{ class_name }}{{ field_name | pascalcase }}EdgePartial
+  ): {{ field.type }}
+  {% endif %}
+  {% endif %}
+  {% endif %}
+  {% if 'create' in class.operations %}
+  attach{{ class_name }}{{ field_name | pascalcase }}Relation(
+    "Type and identifier for the source of the relation"
+    from: TypeID!,
+    "Type and identifier for the target of the relation"
+    to: TypeID!,
+    "Edge data for {{ field_name | pascalcase }} relation"
+    _edge: {{ class_name }}{{ field_name | pascalcase }}EdgePartial
+  ): Boolean
+  {% endif %}
+  {% if 'update' in class.operations %}
+  update{{ class_name }}{{ field_name | pascalcase }}Relation(
+    "Type and identifier for the source of the relation"
+    from: TypeID!,
+    "Type and identifier for the target of the relation"
+    to: TypeID!,
+    """Merge object structures in payload with existing objects?
+       By default (`false`), objects in payload will replace existing objects."""
+    mergeObjects: Boolean,
+    "Edge data for {{ field_name | pascalcase }} relation"
+    _edge: {{ class_name }}{{ field_name | pascalcase }}EdgePartial
+  ): Boolean
+  {% endif %}
+  {% else %}
+  {% if field.type[-5:] == 'Union' or field.type[-3:] == 'Any' %}
+  {% for type in domain.unions[field.type] %}
+  {% if 'create' in domain.classes[type].operations %}
+  {% if domain.classes[type].attributes.values() | rejectattr('is_readonly') | list %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!,
+    "Input data for new {{ type }}"
+    input: {{ type }}Input!
+  ): {{ type }}
+  {% else %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!
+  ): {{ type }}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+  {% else %}
+  {% if 'create' in domain.classes[field.type].operations %}
+  {% if domain.classes[field.type].attributes.values() | rejectattr('is_readonly') | list %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ field.type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!,
+    "Input data for new {{ field.type }}"
+    input: {{ field.type }}Input!
+  ): {{ field.type }}
+  {% else %}
+  create{{ class_name }}{{ field_name | pascalcase }}Related{{ field.type }}(
+    "Identifier key for the {{ class_name }} object"
+    _key: ID!
+  ): {{ field.type }}
+  {% endif %}
+  {% endif %}
+  {% endif %}
+  {% if 'create' in class.operations %}
+  attach{{ class_name }}{{ field_name | pascalcase }}Relation(
+    "Type and identifier for the source of the relation"
+    from: TypeID!,
+    "Type and identifier for the target of the relation"
+    to: TypeID!
+  ): Boolean
+  {% endif %}
+  {% if 'update' in class.operations %}
+  update{{ class_name }}{{ field_name | pascalcase }}Relation(
+    "Type and identifier for the source of the relation"
+    from: TypeID!,
+    "Type and identifier for the target of the relation"
+    to: TypeID!
+  ): Boolean
+  {% endif %}
+  {% endif %}
+  {% if 'delete' in class.operations %}
+  detach{{ class_name }}{{ field_name | pascalcase }}Relation(
+    "Type and identifier for the source of the relation"
+    from: TypeID!,
+    "Type and identifier for the target of the relation"
+    to: TypeID!
+  ): Boolean
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+}
+
+{% endif %}
+{% for class_name, class in domain.classes.items() %}
+{% if class.attributes.values() | rejectattr('is_readonly') | list %}
+{% if 'create' in class.operations %}
+"""Input type for {{ class_name }} create mutations"""
+input {{ class_name }}Input {
+  {% for field_name, field in class.attributes.items() %}
+  {% if not field.is_readonly %}
+  {% if field.is_list %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {{ field_name }}: [{{ field.type }}{{ 'Input' if not field.type in graphql_types }}{{ '!' if field.is_required }}]
+  {% else %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {{ field_name }}: {{ field.type }}{{ 'Input' if not field.type in graphql_types }}{{ '!' if field.is_required }}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+}
+
+{% endif %}
+{% if 'update' in class.operations %}
+"""Input type for {{ class_name }} update mutations"""
+input {{ class_name }}Partial {
+  {% for field_name, field in class.attributes.items() %}
+  {% if not field.is_readonly %}
+  {% if field.is_list %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {{ field_name }}: [{{ field.type }}{{ 'Input' if not field.type in graphql_types }}]
+  {% else %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {{ field_name }}: {{ field.type }}{{ 'Input' if not field.type in graphql_types }}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+}
+
+{% endif %}
+{% endif %}
+{% for field_name, field in class.relations.items() %}
+{% if field.edge_fields %}
+"""Input type for edge data in {{ field_name }} mutations"""
+input {{ class_name }}{{ field_name | pascalcase }}EdgePartial {
+  {% for edge_field_name, edge_field in field.edge_fields.items() %}
+  {% if edge_field.description %}"""{{ edge_field.description }}"""{% endif %}
+  {{ edge_field_name }}: {{ edge_field.type }}{{ 'Input' if not edge_field.type in graphql_types }}{{ '!' if edge_field.is_required }}
+  {% endfor %}
+}
+
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% for type_name, type_spec in domain.types.items() %}
+"""Input type for subtype {{ type_name }}"""
+input {{ type_name }}Input {
+  {% for field_name, field in type_spec.items() %}
+  {% if field.description %}"""{{ field.description }}"""{% endif %}
+  {{ field_name }}: {{ field.type }}{{ 'Input' if not field.type in graphql_types }}
+  {% endfor %}
+}
+
+{% endfor %}
+"""Datetime string in ISO 8601 format"""
+scalar DateTime
+
+"""Meta field for returning all fields for an object, even undocumented ones"""
+scalar AllFields
+
+"""Input type for relations"""
+input TypeID {
+  "Type name of related object"
+  type: String!
+  "Identifier key for related object"
+  _key: ID!
+}
+
+schema {
+  query: Query
+  {% if mutations %}
+  mutation: Mutation
+  {% endif %}
+}

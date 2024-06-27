@@ -1,0 +1,21 @@
+view_name: memoriam_text_search
+
+# Initial ArangoSearch functionality in Memoriam collects searchable data
+# in a field called _index, to avoid potentially huge AQL constructs
+# with multiple fields in multiple collections.
+# This is the default configuration used with each linked collection:
+default_collection_props: &default
+  fields:
+    _index:
+      analyzers:
+        - text_en
+
+# Searchable collections are linked here:
+view_props:
+  links: {}
+
+# Fields collected into _index from each collection are configured here:
+index_fields: {}
+
+# Configurable analyzers, not currently used
+analyzers: []

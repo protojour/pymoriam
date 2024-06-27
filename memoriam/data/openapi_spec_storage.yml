@@ -1,0 +1,199 @@
+openapi: 3.1.0
+
+info:
+  title: Memoriam Storage API
+  description: OpenAPI spec for object storage
+  version: '1.0'
+  x-logo:
+    url: /docs/_static/memoriam.png
+    altText: Memoriam
+
+servers:
+  - url: /api
+
+tags:
+  - name: Storage
+    description: Object storage endpoints
+
+components:
+
+  parameters:
+    bucket_name:
+      name: bucket_name
+      description: Bucket name
+      in: path
+      required: true
+      schema: &bucket_name_schema
+        type: string
+        minLength: 3
+        maxLength: 63
+        pattern: ^[a-z0-9][a-z0-9-.]+[a-z0-9]$
+    object_name:
+      name: object_name
+      description: Object name
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        pattern: ^[A-Za-z0-9/!-_.*'()]+$
+
+  schemas: {}
+
+paths:
+  /storage/buckets:
+    get:
+      operationId: memoriam.storage.storage.list_buckets
+      summary: List buckets
+      tags: [Storage]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bucket_name:
+                      type: string
+                    creation_date:
+                      type: string
+                      format: date-time
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+    post:
+      operationId: memoriam.storage.storage.post_bucket
+      summary: Create a new bucket
+      tags: [Storage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bucket_name: *bucket_name_schema
+              required:
+                - bucket_name
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict (name already exists)
+
+  /storage/{bucket_name}:
+    parameters:
+      - $ref: '#/components/parameters/bucket_name'
+    get:
+      operationId: memoriam.storage.storage.get_bucket
+      summary: List contents of bucket
+      tags: [Storage]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: &storage_object_props
+                    object_name:
+                      type: string
+                    size:
+                      type: integer
+                    etag:
+                      type: string
+                    content_type:
+                      type: string
+                    last_modified:
+                      type: string
+                      format: date-time
+                    metadata:
+                      type: object
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+  /storage/{bucket_name}/{object_name}:
+    parameters:
+      - $ref: '#/components/parameters/bucket_name'
+      - $ref: '#/components/parameters/object_name'
+    get:
+      operationId: memoriam.storage.storage.get_object
+      summary: Get object
+      tags: [Storage]
+      parameters:
+        - name: stat
+          description: If true, request only object stats
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            # in case of a stats request
+            application/json:
+              schema:
+                type: object
+                properties: *storage_object_props
+            # ...but when requesting the actual object
+            # may be ANY media type!
+            # TODO: find out how to document
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+    post:
+      operationId: memoriam.storage.storage.post_object
+      summary: Post object
+      tags: [Storage]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sha256:
+                    type: string
+                  object_name:
+                    type: string
+                  etag:
+                    type: string
+        '400':
+          description: Bad input parameters
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict
+        '413':
+          description: Maximum size limit for file upload reached
